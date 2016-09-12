@@ -14,6 +14,7 @@
 		0DC9B6031D40A2A2002AC776 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0DC9B6021D40A2A2002AC776 /* Assets.xcassets */; };
 		0DC9B6061D40A2A2002AC776 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 0DC9B6041D40A2A2002AC776 /* LaunchScreen.storyboard */; };
 		0DC9B60F1D40A32A002AC776 /* XIAlertView.m in Sources */ = {isa = PBXBuildFile; fileRef = 0DC9B60E1D40A32A002AC776 /* XIAlertView.m */; };
+		0DF889741D864AA6008CD8C3 /* XIMessageBoardView.m in Sources */ = {isa = PBXBuildFile; fileRef = 0DF889731D864AA6008CD8C3 /* XIMessageBoardView.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -29,6 +30,8 @@
 		0DC9B6071D40A2A2002AC776 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		0DC9B60D1D40A32A002AC776 /* XIAlertView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = XIAlertView.h; sourceTree = "<group>"; };
 		0DC9B60E1D40A32A002AC776 /* XIAlertView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = XIAlertView.m; sourceTree = "<group>"; };
+		0DF889721D864AA6008CD8C3 /* XIMessageBoardView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = XIMessageBoardView.h; sourceTree = "<group>"; };
+		0DF889731D864AA6008CD8C3 /* XIMessageBoardView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = XIMessageBoardView.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -61,6 +64,8 @@
 		0DC9B5F51D40A2A2002AC776 /* XIAlertView */ = {
 			isa = PBXGroup;
 			children = (
+				0DF889721D864AA6008CD8C3 /* XIMessageBoardView.h */,
+				0DF889731D864AA6008CD8C3 /* XIMessageBoardView.m */,
 				0DC9B60D1D40A32A002AC776 /* XIAlertView.h */,
 				0DC9B60E1D40A32A002AC776 /* XIAlertView.m */,
 				0DC9B5F91D40A2A2002AC776 /* AppDelegate.h */,
@@ -156,6 +161,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				0DC9B60F1D40A32A002AC776 /* XIAlertView.m in Sources */,
+				0DF889741D864AA6008CD8C3 /* XIMessageBoardView.m in Sources */,
 				0DC9B5FE1D40A2A2002AC776 /* ViewController.m in Sources */,
 				0DC9B5FB1D40A2A2002AC776 /* AppDelegate.m in Sources */,
 				0DC9B5F81D40A2A2002AC776 /* main.m in Sources */,

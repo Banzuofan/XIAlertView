@@ -24,6 +24,7 @@
 // THE SOFTWARE.
 
 #import "XIAlertView.h"
+#import <objc/runtime.h>
 
 static CGFloat const kDefaultContainerWidth = 280.;
 static CGFloat const kTitleMessageSpace = 12;
@@ -35,6 +36,7 @@ static CGFloat const kMaxMessageHeight = 220;
 #define kButtonTitleColor [UIColor colorWithRed:0.0f green:0.5f blue:1.0f alpha:1.0f]
 #define kDestructiveButtonTitleColor [UIColor colorWithRed:0.988 green:0.239 blue:0.224 alpha:1.00]
 #define kDefaultAnimationDuration 0.25
+#define kDefaultCustomViewSize CGSizeMake(280, 240)
 
 CGSize XIAlertView_SizeOfLabel(NSString *text, UIFont *font, CGSize constraintSize){
     NSDictionary *attrs = @{NSFontAttributeName:font};
@@ -46,6 +48,27 @@ CGSize XIAlertView_SizeOfLabel(NSString *text, UIFont *font, CGSize constraintSi
 }
 
 #define SIZE_LABEL(text, font, constraintSize) XIAlertView_SizeOfLabel(text, font, constraintSize)
+
+@interface UIViewController (__backgroundView)
+- (UIView *)backgroundView;
+@end
+
+static void* __backgroundViewKey = &__backgroundViewKey;
+@implementation UIViewController (__backgroundView)
+- (UIView *)backgroundView
+{
+    UIView *v = objc_getAssociatedObject(self, __backgroundViewKey);
+    if(!v){
+        v = [[UIView alloc] initWithFrame:self.view.bounds];
+        v.backgroundColor = [UIColor colorWithWhite:0 alpha:0.35];
+        v.autoresizingMask = self.view.autoresizingMask;
+        [self.view addSubview:v];
+        
+        objc_setAssociatedObject(self, __backgroundViewKey, v, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    }
+    return v;
+}
+@end
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -61,6 +84,7 @@ CGSize XIAlertView_SizeOfLabel(NSString *text, UIFont *font, CGSize constraintSi
 - (void)prepareViews;
 + (BOOL)canBlur;
 - (void)applyBlurEffect;
+- (void)disableBlurEffect;
 @end
 
 @interface XIAlertButtonItem : UIButton
@@ -73,6 +97,7 @@ CGSize XIAlertView_SizeOfLabel(NSString *text, UIFont *font, CGSize constraintSi
 @property(nonatomic, weak) XIAlertView *alertView;
 @property(nonatomic, strong, readonly) UILabel *titleLabel;
 @property(nonatomic, strong, readonly) UILabel *messageLabel;
+@property(nonatomic, assign) CGSize preferredFrameSize;
 @property(nonatomic, assign) UIEdgeInsets contentInsets;
 - (void)setTitle:(NSString *)title message:(NSString *)message;
 - (CGSize)getFitSize;
@@ -81,6 +106,7 @@ CGSize XIAlertView_SizeOfLabel(NSString *text, UIFont *font, CGSize constraintSi
 @interface XIAlertViewController : UIViewController
 @property (nonatomic, weak) XIAlertView *alertView;
 @property (nonatomic, assign) BOOL rootViewControllerPrefersStatusBarHidden;
+@property (nonatomic, assign) UIStatusBarStyle rootViewControllerPreferredStatusBarStyle;
 @end
 
 @interface XIAlertViewQueue : NSObject
@@ -99,13 +125,14 @@ CGSize XIAlertView_SizeOfLabel(NSString *text, UIFont *font, CGSize constraintSi
 @interface XIAlertView ()
 {
     XIAlertContentView *_contentView;
-    NSMutableArray *_buttonConstraints;
 }
 @property(nonatomic, strong) NSMutableArray *buttons;
 @property(nonatomic, strong) UIWindow *lastKeyWindow;
 @property(nonatomic, strong) UIWindow *currentKeyWindow;
 @property(nonatomic, assign, getter = isVisible) BOOL visible;
 @property(nonatomic, strong) UIFont *appearanceMessageFontBeforeChanging;
+@property(nonatomic, assign) BOOL customViewVisible;
+@property(nonatomic, assign) XICustomViewPresentationStyle customViewPresentationStyle;
 @end
 
 @implementation XIAlertView
@@ -120,32 +147,74 @@ CGSize XIAlertView_SizeOfLabel(NSString *text, UIFont *font, CGSize constraintSi
     }
 }
 
+- (instancetype)initWithFrame:(CGRect)frame
+{
+    if(self=[super initWithFrame:frame]){
+        self.userInteractionEnabled = YES;
+        self.layer.cornerRadius = 8;
+        self.clipsToBounds = YES;
+        
+        _buttons = @[].mutableCopy;
+    }
+    return self;
+}
+
 - (id)initWithTitle:(NSString *)title message:(NSString *)message cancelButtonTitle:(NSString *)cancelButtonTitle
 {
-    if(self=[super initWithFrame:CGRectZero]){
-        self.userInteractionEnabled = YES;
-        _buttons = @[].mutableCopy;
-        _buttonConstraints = @[].mutableCopy;
+    if(self=[self initWithFrame:CGRectZero]){
+        
+        self.customViewVisible = NO;
         
         _contentView = [[XIAlertContentView alloc] initWithFrame:CGRectZero];
         _contentView.alertView = self;
         _contentView.contentInsets = UIEdgeInsetsMake(20, 15, 20, 15);
         [self addSubview:_contentView];
-        [_contentView setTitle:title message:message];
+        [_contentView setTitle:[title copy] message:[message copy]];
         
         if(cancelButtonTitle&&cancelButtonTitle.length>0){
             [self addButtonWithTitle:cancelButtonTitle style:XIAlertActionStyleCancel handler:^(XIAlertView *alertView, XIAlertButtonItem *buttonItem) {
                 [alertView dismiss];
             }];
         }
-        self.layer.cornerRadius = 8;
-        self.clipsToBounds = YES;
+    }
+    return self;
+}
+
+- (instancetype)initWithCustomView:(UIView *)customView
+{
+    if(self=[self initWithCustomView:customView withPresentationStyle:Default]){
+        
+    }
+    return self;
+}
+
+- (instancetype)initWithCustomView:(UIView *)customView withPresentationStyle:(XICustomViewPresentationStyle)style
+{
+    if(self=[self initWithFrame:CGRectZero]){
+        self.customViewPresentationStyle = style;
+        self.customViewVisible = YES;
+        
+        _contentView = [[XIAlertContentView alloc] initWithFrame:CGRectZero];
+        _contentView.alertView = self;
+        [self addSubview:_contentView];
+        if(CGSizeEqualToSize(customView.frame.size, CGSizeZero)){
+            _contentView.preferredFrameSize = kDefaultCustomViewSize;
+        }
+        else{
+            _contentView.preferredFrameSize = customView.frame.size;
+        }
+        _contentView.frame = CGRectMake(0, 0, _contentView.preferredFrameSize.width, _contentView.preferredFrameSize.height);
+        [_contentView addSubview:customView];
+        customView.autoresizingMask = UIViewAutoresizingFlexibleWidth|UIViewAutoresizingFlexibleHeight;
     }
     return self;
 }
 
 - (void)addButtonWithTitle:(NSString *)title style:(XIAlertActionStyle)style handler:(void(^)(XIAlertView *alertView, XIAlertButtonItem *buttonItem))handler
 {
+    if(self.customViewVisible){
+        return;
+    }
     XIAlertButtonItem *button = [[XIAlertButtonItem alloc] initWithFrame:CGRectZero];
     button.alertView = self;
     button.actionHanlder = handler;
@@ -164,7 +233,6 @@ CGSize XIAlertView_SizeOfLabel(NSString *text, UIFont *font, CGSize constraintSi
     }
     [_buttons addObject:button];
     
-    
     [self updateUILayouts];
 }
 
@@ -175,11 +243,12 @@ CGSize XIAlertView_SizeOfLabel(NSString *text, UIFont *font, CGSize constraintSi
 
 - (void)updateUILayouts
 {
+    if(self.customViewVisible){
+        return;
+    }
+    
     CGSize size = [_contentView getFitSize];
     _contentView.frame = CGRectMake(0, 0, kDefaultContainerWidth, size.height);
-    
-    [self removeConstraints:_buttonConstraints];
-    [_buttonConstraints removeAllObjects];
     
     if(_buttons.count==1){
         XIAlertButtonItem *button = _buttons[0];
@@ -215,6 +284,10 @@ CGSize XIAlertView_SizeOfLabel(NSString *text, UIFont *font, CGSize constraintSi
 
 - (CGSize)intrinsicContentSize
 {
+    if(self.customViewVisible){
+        return _contentView.frame.size;
+    }
+    
     CGFloat maxHeight;
     CGSize size = [_contentView getFitSize];
     maxHeight = size.height;
@@ -236,21 +309,57 @@ CGSize XIAlertView_SizeOfLabel(NSString *text, UIFont *font, CGSize constraintSi
     }
 }
 
+- (void)disableBlurEffect
+{
+    [_contentView disableBlurEffect];
+    for(XIAlertButtonItem *item in _buttons){
+        [item.backgroundView disableBlurEffect];
+    }
+}
+
 - (void)showWithAnimation:(BOOL)animated completion:(dispatch_block_t)completion
 {
     if(animated){
-        self.alpha = 0;
-        self.transform = CGAffineTransformMakeScale(1.2, 1.2);
-        [UIView animateWithDuration:kDefaultAnimationDuration
-                         animations:^{
-                             self.alpha = 1.;
-                             self.transform = CGAffineTransformIdentity;
-                         }
-                         completion:^(BOOL finished) {
-                             if(completion){
-                                 completion();
-                             }
-                         }];
+        NSTimeInterval _duration = kDefaultAnimationDuration;
+        if(self.currentKeyWindow.rootViewController.view){
+            self.currentKeyWindow.rootViewController.backgroundView.alpha = 0;
+        }
+        if(self.customViewVisible){
+            
+            if(self.customViewPresentationStyle==Default){
+                self.transform = CGAffineTransformMakeScale(1.2, 1.2);
+            }
+            else if(self.customViewPresentationStyle==MoveUp){
+                _duration = 0.35;
+                self.transform = CGAffineTransformMakeTranslation(0, [UIScreen mainScreen].bounds.size.height);
+            }
+            else if (self.customViewPresentationStyle==MoveDown){
+                _duration = 0.35;
+                self.transform = CGAffineTransformMakeTranslation(0, -[UIScreen mainScreen].bounds.size.height);
+            }
+        }
+        else{
+            self.transform = CGAffineTransformMakeScale(1.2, 1.2);
+        }
+        
+        [UIView animateWithDuration:_duration delay:0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
+            if(self.customViewVisible){
+                if(self.customViewPresentationStyle==Default){
+                    
+                }
+                else if(self.customViewPresentationStyle==MoveUp){
+                    
+                }
+            }
+            self.transform = CGAffineTransformIdentity;
+            if(self.currentKeyWindow.rootViewController.view){
+                self.currentKeyWindow.rootViewController.backgroundView.alpha = 1;
+            }
+        } completion:^(BOOL finished) {
+            if(completion){
+                completion();
+            }
+        }];
     }
     else{
         if(completion){
@@ -266,22 +375,50 @@ CGSize XIAlertView_SizeOfLabel(NSString *text, UIFont *font, CGSize constraintSi
     
     if(animated){
         [XIAlertViewQueue sharedQueue].animating = YES;
-        [UIView animateWithDuration:kDefaultAnimationDuration
-                         animations:^{
-                             self.alpha = 0;
-                             self.transform = CGAffineTransformMakeScale(0.9,0.9);
-                             
-                             if(self.currentKeyWindow.rootViewController.view){
-                                 self.currentKeyWindow.rootViewController.view.alpha = 0;
-                             }
-                         }
-                         completion:^(BOOL finished) {
-                             [XIAlertViewQueue sharedQueue].animating = NO;
-                             [XIAlertViewQueue sharedQueue].currentAlertView = nil;
-                             if(completion){
-                                 completion();
-                             }
-                         }];
+        NSTimeInterval _duration = kDefaultAnimationDuration;
+        if(self.customViewVisible){
+            if(self.customViewPresentationStyle==Default){
+                
+            }
+            else if(self.customViewPresentationStyle==MoveUp){
+                _duration = 0.35;
+            }
+            else if (self.customViewPresentationStyle==MoveDown){
+                _duration = 0.35;
+            }
+        }
+        else
+        {
+            [self disableBlurEffect];
+        }
+        
+        [UIView animateWithDuration:_duration delay:0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
+            if(self.customViewVisible){
+                if(self.customViewPresentationStyle==Default){
+                    self.alpha = 0;
+                    self.transform = CGAffineTransformMakeScale(0.75,0.75);
+                }
+                else if(self.customViewPresentationStyle==MoveUp){
+                    self.transform = CGAffineTransformMakeTranslation(0, [UIScreen mainScreen].bounds.size.height);
+                }
+                else if (self.customViewPresentationStyle==MoveDown){
+                    self.transform = CGAffineTransformMakeTranslation(0, [UIScreen mainScreen].bounds.size.height);
+                }
+            }
+            else{
+                self.alpha = 0;
+                self.transform = CGAffineTransformMakeScale(0.8,0.8);
+            }
+            if(self.currentKeyWindow.rootViewController.view){
+                self.currentKeyWindow.rootViewController.backgroundView.alpha = 0;
+            }
+        } completion:^(BOOL finished) {
+            [XIAlertViewQueue sharedQueue].animating = NO;
+            [XIAlertViewQueue sharedQueue].currentAlertView = nil;
+            if(completion){
+                completion();
+            }
+        }];
     }
     else{
         self.alpha = 0;
@@ -295,7 +432,7 @@ CGSize XIAlertView_SizeOfLabel(NSString *text, UIFont *font, CGSize constraintSi
 
 - (void)show
 {
-    if(_buttons.count==0){
+    if(_buttons.count==0 && !self.customViewVisible){
         [self addButtonWithTitle:NSLocalizedString(@"Cancel", @"Cancel") style:XIAlertActionStyleCancel handler:^(XIAlertView *alertView, XIAlertButtonItem *buttonItem) {
             [alertView dismiss];
         }];
@@ -326,6 +463,7 @@ CGSize XIAlertView_SizeOfLabel(NSString *text, UIFont *font, CGSize constraintSi
     viewController.alertView = self;
     if ([self.lastKeyWindow.rootViewController respondsToSelector:@selector(prefersStatusBarHidden)]) {
         viewController.rootViewControllerPrefersStatusBarHidden = self.lastKeyWindow.rootViewController.prefersStatusBarHidden;
+        viewController.rootViewControllerPreferredStatusBarStyle = [UIApplication sharedApplication].statusBarStyle;
     }
     if (!self.currentKeyWindow) {
         UIWindow *window = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
@@ -351,6 +489,7 @@ CGSize XIAlertView_SizeOfLabel(NSString *text, UIFont *font, CGSize constraintSi
     [self hideWithAnimation:YES completion:^{
         
         [self removeFromSuperview];
+        self.currentKeyWindow.hidden = YES;
         self.currentKeyWindow.rootViewController = nil;
         
         [self.currentKeyWindow removeFromSuperview];
@@ -366,7 +505,7 @@ CGSize XIAlertView_SizeOfLabel(NSString *text, UIFont *font, CGSize constraintSi
         }
     }];
     
-    [self.lastKeyWindow makeKeyWindow];
+    [self.lastKeyWindow makeKeyAndVisible];
     self.lastKeyWindow.hidden = NO;
 }
 
@@ -435,31 +574,42 @@ CGSize XIAlertView_SizeOfLabel(NSString *text, UIFont *font, CGSize constraintSi
         
         self.blurEnabled = [XIAlertContentView canBlur];
         _constraints = @[].mutableCopy;
-        
+        _preferredFrameSize = CGSizeZero;
+    }
+    return self;
+}
+
+- (UILabel *)titleLabel
+{
+    if(!_titleLabel){
         _titleLabel = [[UILabel alloc] initWithFrame:CGRectZero];
         _titleLabel.textAlignment = NSTextAlignmentCenter;
         _titleLabel.numberOfLines = 0;
         _titleLabel.font = [XIAlertView appearance].titleFont?:[UIFont boldSystemFontOfSize:17.0f];
         [self addSubview:_titleLabel];
-        
+        _titleLabel.translatesAutoresizingMaskIntoConstraints = NO;
+        [_titleLabel setContentHuggingPriority:UILayoutPriorityDefaultHigh forAxis:UILayoutConstraintAxisVertical];
+    }
+    return _titleLabel;
+}
+
+- (UILabel *)messageLabel
+{
+    if(!_messageLabel){
         _messageLabel = [[UILabel alloc] initWithFrame:CGRectZero];
         _messageLabel.textAlignment = NSTextAlignmentCenter;
         _messageLabel.numberOfLines = 0;
         _messageLabel.font = [XIAlertView appearance].messageFont?:[UIFont systemFontOfSize:15.0f];
         [self addSubview:_messageLabel];
-        
-        _titleLabel.translatesAutoresizingMaskIntoConstraints = NO;
         _messageLabel.translatesAutoresizingMaskIntoConstraints = NO;
-        
-        [_titleLabel setContentHuggingPriority:UILayoutPriorityDefaultHigh forAxis:UILayoutConstraintAxisVertical];
         [_messageLabel setContentHuggingPriority:UILayoutPriorityDefaultLow forAxis:UILayoutConstraintAxisVertical];
     }
-    return self;
+    return _messageLabel;
 }
 
 - (void)setTitle:(NSString *)title message:(NSString *)message
 {
-    _titleLabel.text = title;
+    self.titleLabel.text = title;
     
     if(!title||title.length==0){
         self.alertView.appearanceMessageFontBeforeChanging = [XIAlertView appearance].messageFont;
@@ -468,16 +618,24 @@ CGSize XIAlertView_SizeOfLabel(NSString *text, UIFont *font, CGSize constraintSi
     else{
         self.alertView.appearanceMessageFontBeforeChanging = nil;
     }
-    _messageLabel.font = [XIAlertView appearance].messageFont;
-    _messageLabel.text = message;
+    self.messageLabel.font = [XIAlertView appearance].messageFont;
+    self.messageLabel.text = message;
     
     [self setNeedsUpdateConstraints];
     [self invalidateIntrinsicContentSize];
 }
 
+// 是否显示自定义的视图
+- (BOOL)isCustomContentView
+{
+    return !CGSizeEqualToSize(self.preferredFrameSize, CGSizeZero);
+}
 
 - (CGSize)intrinsicContentSize
 {
+    if([self isCustomContentView]){
+        return [super intrinsicContentSize];
+    }
     return [self getFitSize];
 }
 
@@ -486,20 +644,20 @@ CGSize XIAlertView_SizeOfLabel(NSString *text, UIFont *font, CGSize constraintSi
     CGFloat resHeight = 0;
     CGSize aSize;
     CGFloat preferredTextWidth = kDefaultContainerWidth-self.contentInsets.left-self.contentInsets.right;
-    if(_titleLabel.text&&_titleLabel.text.length>0){
-        aSize = SIZE_LABEL(_titleLabel.text, _titleLabel.font, CGSizeMake(preferredTextWidth, MAXFLOAT));
+    if(self.titleLabel.text&&self.titleLabel.text.length>0){
+        aSize = SIZE_LABEL(self.titleLabel.text, self.titleLabel.font, CGSizeMake(preferredTextWidth, MAXFLOAT));
         resHeight += aSize.height;
     }
     
-    if(_messageLabel.text&&_messageLabel.text.length>0){
-        aSize = SIZE_LABEL(_messageLabel.text, _messageLabel.font, CGSizeMake(preferredTextWidth, MAXFLOAT));
+    if(self.messageLabel.text&&self.messageLabel.text.length>0){
+        aSize = SIZE_LABEL(self.messageLabel.text, self.messageLabel.font, CGSizeMake(preferredTextWidth, MAXFLOAT));
         if(aSize.height>kMaxMessageHeight){
             aSize.height = kMaxMessageHeight;
         }
         resHeight += aSize.height;
     }
     
-    if(_titleLabel.text.length>0&&_messageLabel.text.length>0){
+    if(self.titleLabel.text.length>0&&self.messageLabel.text.length>0){
         resHeight += kTitleMessageSpace;
     }
     resHeight += self.contentInsets.top+self.contentInsets.bottom;
@@ -512,6 +670,10 @@ CGSize XIAlertView_SizeOfLabel(NSString *text, UIFont *font, CGSize constraintSi
 
 - (void)setNeedsUpdateConstraints
 {
+    if([self isCustomContentView]){
+        return [super setNeedsUpdateConstraints];
+    }
+    
     if(_constraints.count>0){
         [self removeConstraints:_constraints];
     }
@@ -521,6 +683,10 @@ CGSize XIAlertView_SizeOfLabel(NSString *text, UIFont *font, CGSize constraintSi
 
 - (void)updateConstraints
 {
+    if([self isCustomContentView]){
+        return [super updateConstraints];
+    }
+    
     if (_constraints.count>0) {
         [super updateConstraints];
         return;
@@ -664,7 +830,7 @@ CGSize XIAlertView_SizeOfLabel(NSString *text, UIFont *font, CGSize constraintSi
 {
     _blurEnabled = enabled;
     if(_backgroundView){
-        _backgroundView.alpha = _blurEnabled?0.15:0.98;
+        _backgroundView.alpha = _blurEnabled?0.00:0.98;
     }
 }
 
@@ -692,14 +858,60 @@ CGSize XIAlertView_SizeOfLabel(NSString *text, UIFont *font, CGSize constraintSi
 #endif
     self.blurEnabled = [[self class] canBlur];
 }
+
+- (void)disableBlurEffect
+{
+    _backgroundView.alpha = 0.98;
+#if __IPHONE_OS_VERSION_MAX_ALLOWED >= 80000
+    if(_blurView){
+        [_blurView removeFromSuperview];
+        _blurView = nil;
+    }
+#endif
+}
 @end
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
+static NSCache *alertButtonItem_imageCache;
 @implementation XIAlertButtonItem
+
++ (void)initialize
 {
-    UIButton *button;
+    if (self == [XIAlertButtonItem class]) {
+        static dispatch_once_t onceToken;
+        dispatch_once(&onceToken, ^{
+            alertButtonItem_imageCache = [[NSCache alloc] init];
+        });
+    }
+}
+
++ (NSCache *)imageCache
+{
+    if(alertButtonItem_imageCache){
+        return alertButtonItem_imageCache;
+    }
+    alertButtonItem_imageCache = [[NSCache alloc] init];
+    return alertButtonItem_imageCache;
+}
+
++ (UIImage *)imageFromColor:(UIColor *)color withSize:(CGSize)size
+{
+    UIImage *image = [[self imageCache] objectForKey:@"highlighted"];
+    if(image){
+        return image;
+    }
+    
+    CGRect rect = CGRectMake(0, 0, size.width, size.height);
+    UIGraphicsBeginImageContext(rect.size);
+    CGContextRef context = UIGraphicsGetCurrentContext();
+    CGContextSetFillColorWithColor(context, [color CGColor]);
+    CGContextFillRect(context, rect);
+    image = UIGraphicsGetImageFromCurrentImageContext();
+    [[self imageCache] setObject:image forKey:@"highlighted"];
+    UIGraphicsEndImageContext();
+    return image;
 }
 
 - (instancetype)initWithFrame:(CGRect)frame
@@ -708,73 +920,23 @@ CGSize XIAlertView_SizeOfLabel(NSString *text, UIFont *font, CGSize constraintSi
         self.backgroundColor = [UIColor clearColor];
         self.userInteractionEnabled = YES;
         [self addTarget:self action:@selector(touchUpInside:) forControlEvents:UIControlEventTouchUpInside];
-        [self addTarget:self action:@selector(touchDown:) forControlEvents:UIControlEventTouchDown];
-        [self addTarget:self action:@selector(touchUpOutside:) forControlEvents:UIControlEventTouchUpOutside];
-        [self addTarget:self action:@selector(touchDragOutside:) forControlEvents:UIControlEventTouchDragOutside];
+        
+        [self setBackgroundImage:[XIAlertButtonItem imageFromColor:[UIColor colorWithWhite:1.0 alpha:0.35] withSize:CGSizeMake(5, 5)]
+                        forState:UIControlStateHighlighted];
         
         _backgroundView = [[XIBlurSupportedBackgroundView alloc] initWithFrame:self.bounds];
+        _backgroundView.userInteractionEnabled = NO;
         _backgroundView.autoresizingMask = UIViewAutoresizingFlexibleWidth|UIViewAutoresizingFlexibleHeight;
         [self addSubview:_backgroundView];
         _backgroundView.blurEnabled = [XIBlurSupportedBackgroundView canBlur];
-        
-        button = [[UIButton alloc] initWithFrame:self.bounds];
-        button.backgroundColor = [UIColor clearColor];
-        button.autoresizingMask = UIViewAutoresizingFlexibleWidth|UIViewAutoresizingFlexibleHeight;
-        [self addSubview:button];
-        [button addTarget:self action:@selector(touchDown:) forControlEvents:UIControlEventTouchDown];
-        [button addTarget:self action:@selector(touchUpInside:) forControlEvents:UIControlEventTouchUpInside];
-        [button addTarget:self action:@selector(touchUpOutside:) forControlEvents:UIControlEventTouchUpOutside];
-        [button addTarget:self action:@selector(touchDragOutside:) forControlEvents:UIControlEventTouchDragOutside];
-        
     }
     return self;
 }
 
-- (void)touchDown:(UIButton *)btn
-{
-    if([btn titleForState:UIControlStateNormal]){
-        if([XIBlurSupportedBackgroundView canBlur]){
-            _backgroundView.backgroundView.backgroundColor = [UIColor colorWithWhite:0.0 alpha:1.];
-        }
-        else{
-            _backgroundView.backgroundView.backgroundColor = [UIColor colorWithWhite:0.95 alpha:1];
-        }
-    }
-    else{
-        [self sendActionsForControlEvents:UIControlEventTouchDown];
-    }
-}
-
 - (void)touchUpInside:(UIButton *)btn
 {
-    if([btn titleForState:UIControlStateNormal]){
-        if(_actionHanlder){
-            _actionHanlder(self.alertView, self);
-        }
-        _backgroundView.backgroundView.backgroundColor = [UIColor whiteColor];
-    }
-    else{
-        [self sendActionsForControlEvents:UIControlEventTouchUpInside];
-    }
-}
-
-- (void)touchUpOutside:(UIButton *)btn
-{
-    if([btn titleForState:UIControlStateNormal]){
-        _backgroundView.backgroundView.backgroundColor = [UIColor whiteColor];
-    }
-    else{
-        [self sendActionsForControlEvents:UIControlEventTouchUpOutside];
-    }
-}
-
-- (void)touchDragOutside:(UIButton *)btn
-{
-    if([btn titleForState:UIControlStateNormal]){
-        _backgroundView.backgroundView.backgroundColor = [UIColor whiteColor];
-    }
-    else{
-        [self sendActionsForControlEvents:UIControlEventTouchDragOutside];
+    if(_actionHanlder){
+        _actionHanlder(self.alertView, self);
     }
 }
 
@@ -789,8 +951,8 @@ CGSize XIAlertView_SizeOfLabel(NSString *text, UIFont *font, CGSize constraintSi
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-    self.view.backgroundColor = [UIColor colorWithWhite:0 alpha:0.35];
-    [self.view addSubview:self.alertView];
+    self.view.backgroundColor = [UIColor clearColor];
+    [self.view insertSubview:self.alertView aboveSubview:self.backgroundView];
     
     self.alertView.translatesAutoresizingMaskIntoConstraints = NO;
     
@@ -843,9 +1005,15 @@ CGSize XIAlertView_SizeOfLabel(NSString *text, UIFont *font, CGSize constraintSi
 {
     return YES;
 }
+
 - (BOOL)prefersStatusBarHidden
 {
     return _rootViewControllerPrefersStatusBarHidden;
+}
+
+- (UIStatusBarStyle)preferredStatusBarStyle
+{
+    return _rootViewControllerPreferredStatusBarStyle;
 }
 @end
 
@@ -899,6 +1067,24 @@ CGSize XIAlertView_SizeOfLabel(NSString *text, UIFont *font, CGSize constraintSi
             [_allAlerts removeObject:alertView];
         }
     }
+}
+
+@end
+
+@implementation XIAlertView (Creations)
+
++ (instancetype)alertWithTitle:(NSString *)title message:(NSString *)message cancelButtonTitle:(NSString *)cancelButtonTitle
+{
+    XIAlertView *alert = [[XIAlertView alloc] initWithTitle:title message:message cancelButtonTitle:cancelButtonTitle];
+    return alert;
+}
+
++ (instancetype)alertWithCustomView:(UIView *)customView
+              withPresentationStyle:(XICustomViewPresentationStyle)style
+{
+    XIAlertView *alert = [[XIAlertView alloc] initWithCustomView:customView withPresentationStyle:style];
+    [alert show];
+    return alert;
 }
 
 @end

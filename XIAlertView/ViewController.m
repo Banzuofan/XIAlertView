@@ -8,6 +8,7 @@
 
 #import "ViewController.h"
 #import "XIAlertView.h"
+#import "XIMessageBoardView.h"
 
 @interface ViewController ()<UITableViewDelegate, UITableViewDataSource>
 @property(nonatomic, strong) UITableView *contentTable;
@@ -22,7 +23,7 @@
     [super viewDidLoad];
     // Do any additional setup after loading the view, typically from a nib.
     
-    items = @[@"Simple Alerts", @"MultiLined Alerts"];
+    items = @[@"Simple Alerts", @"MultiLined Alerts", @"Custom Alert"];
     
     _contentTable = [[UITableView alloc] initWithFrame:self.view.bounds style:UITableViewStylePlain];
     _contentTable.separatorStyle = UITableViewCellSeparatorStyleNone;
@@ -104,7 +105,7 @@
             });
         });
     }
-    else{
+    else if(indexPath.row==1){
         
         message = @"You can define Swift enumerations to store associated values of any given type, and the value types can be different for each case of the enumeration if needed. Enumerations similar to these are known as discriminated unions, tagged unions, or variants in other programming languages.Like C, Swift uses variables to store and refer to values by an identifying name. Swift also makes extensive use of variables whose values cannot be changed.Swift also makes extensive use of variables whose values cannot be changed.Swift also makes extensive use of variables whose values cannot be changed.";
         XIAlertView *alertView = [[XIAlertView alloc] initWithTitle:title
@@ -128,6 +129,14 @@
             }];
             [alertView show];
         });
+    }
+    else{
+        XIMessageBoardView *customView = [[XIMessageBoardView alloc] initWithFrame:CGRectMake(0, 0, 280, 400) title:@"CustomView" message:@"You can define Swift enumerations to store associated values of any given type, and the value types can be different for each case of the enumeration if needed. "];
+        XIAlertView *alert = [XIAlertView alertWithCustomView:customView withPresentationStyle:Default];
+        __weak XIAlertView *weak_alert = alert;
+        [customView setButtonActionHandler:^{
+            [weak_alert dismiss];
+        }];
     }
 }
 

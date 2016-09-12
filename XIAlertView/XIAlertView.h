@@ -31,6 +31,12 @@ typedef NS_ENUM(NSInteger, XIAlertActionStyle) {
     XIAlertActionStyleDestructive
 };
 
+typedef NS_ENUM(NSInteger, XICustomViewPresentationStyle) {
+    Default = 0,
+    MoveUp,
+    MoveDown
+};
+
 @class XIAlertButtonItem;
 @interface XIAlertView : UIView
 @property(nonatomic, strong) UIColor *titleColor UI_APPEARANCE_SELECTOR;
@@ -38,7 +44,9 @@ typedef NS_ENUM(NSInteger, XIAlertActionStyle) {
 @property(nonatomic, strong) UIColor *messageColor UI_APPEARANCE_SELECTOR;
 @property(nonatomic, strong) UIFont *messageFont UI_APPEARANCE_SELECTOR;
 
-- (id)initWithTitle:(NSString *)title message:(NSString *)message cancelButtonTitle:(NSString *)cancelButtonTitle;
+- (instancetype)initWithTitle:(NSString *)title message:(NSString *)message cancelButtonTitle:(NSString *)cancelButtonTitle;
+- (instancetype)initWithCustomView:(UIView *)customView;
+- (instancetype)initWithCustomView:(UIView *)customView withPresentationStyle:(XICustomViewPresentationStyle)style;
 - (void)addButtonWithTitle:(NSString *)title
                      style:(XIAlertActionStyle)style
                    handler:(void(^)(XIAlertView *alertView, XIAlertButtonItem *buttonItem))handler;
@@ -47,3 +55,14 @@ typedef NS_ENUM(NSInteger, XIAlertActionStyle) {
 - (void)show;
 - (void)dismiss;
 @end
+
+@interface XIAlertView (Creations)
++ (instancetype)alertWithTitle:(NSString *)title message:(NSString *)message cancelButtonTitle:(NSString *)cancelButtonTitle;
++ (instancetype)alertWithCustomView:(UIView *)customView withPresentationStyle:(XICustomViewPresentationStyle)style;
+@end
+
+
+
+
+
+
