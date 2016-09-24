@@ -25,6 +25,7 @@
 
 #import "XIAlertView.h"
 #import <objc/runtime.h>
+#import "XIAlertModalBackgroundView.h"
 
 static CGFloat const kDefaultContainerWidth = 280.;
 static CGFloat const kTitleMessageSpace = 12;
@@ -44,23 +45,22 @@ CGSize XIAlertView_SizeOfLabel(NSString *text, UIFont *font, CGSize constraintSi
                                       options:(NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading)
                                    attributes:attrs
                                       context:nil].size;
-    return CGSizeMake(aSize.width, aSize.height+1);
+    return CGSizeMake(aSize.width, aSize.height+2);
 }
 
 #define SIZE_LABEL(text, font, constraintSize) XIAlertView_SizeOfLabel(text, font, constraintSize)
 
 @interface UIViewController (__backgroundView)
-- (UIView *)backgroundView;
+- (XIAlertModalBackgroundView *)backgroundView;
 @end
 
 static void* __backgroundViewKey = &__backgroundViewKey;
 @implementation UIViewController (__backgroundView)
 - (UIView *)backgroundView
 {
-    UIView *v = objc_getAssociatedObject(self, __backgroundViewKey);
+    XIAlertModalBackgroundView *v = objc_getAssociatedObject(self, __backgroundViewKey);
     if(!v){
-        v = [[UIView alloc] initWithFrame:self.view.bounds];
-        v.backgroundColor = [UIColor colorWithWhite:0 alpha:0.35];
+        v = [[XIAlertModalBackgroundView alloc] initWithFrame:self.view.bounds];
         v.autoresizingMask = self.view.autoresizingMask;
         [self.view addSubview:v];
         
@@ -130,7 +130,6 @@ static void* __backgroundViewKey = &__backgroundViewKey;
 @property(nonatomic, strong) UIWindow *lastKeyWindow;
 @property(nonatomic, strong) UIWindow *currentKeyWindow;
 @property(nonatomic, assign, getter = isVisible) BOOL visible;
-@property(nonatomic, strong) UIFont *appearanceMessageFontBeforeChanging;
 @property(nonatomic, assign) BOOL customViewVisible;
 @property(nonatomic, assign) XICustomViewPresentationStyle customViewPresentationStyle;
 @end
@@ -273,7 +272,6 @@ static void* __backgroundViewKey = &__backgroundViewKey;
         
         for(int i=0;i<_buttons.count;i++){
             XIAlertButtonItem *button = _buttons[i];
-            button.translatesAutoresizingMaskIntoConstraints = YES;
             button.frame = CGRectMake(0, CGRectGetMaxY(lastView.frame)+kAlertLineSpace, kDefaultContainerWidth, kAlertButtonHeight);
             lastView = button;
         }
@@ -372,6 +370,9 @@ static void* __backgroundViewKey = &__backgroundViewKey;
 {
     [[XIAlertViewQueue sharedQueue] remove:self];
     self.visible = NO;
+    
+    // remove the cropped area.
+    self.currentKeyWindow.rootViewController.backgroundView.cropSize = CGSizeZero;
     
     if(animated){
         [XIAlertViewQueue sharedQueue].animating = YES;
@@ -476,7 +477,18 @@ static void* __backgroundViewKey = &__backgroundViewKey;
     self.currentKeyWindow.frame = [UIScreen mainScreen].bounds;
     [self.currentKeyWindow makeKeyAndVisible];
     
+    // Fix UI issue that the size of alert is less than the size of the cropped area.
+    dispatch_block_t refreshUI = ^{
+        [self updateUILayouts];
+        self.currentKeyWindow.rootViewController.backgroundView.cropSize = self.intrinsicContentSize;
+    };
+    
+    refreshUI();
+    
     [self showWithAnimation:YES completion:^{
+        
+        refreshUI();
+        
         [XIAlertViewQueue sharedQueue].animating = NO;
         
         [self applyBlurEffect];
@@ -494,10 +506,6 @@ static void* __backgroundViewKey = &__backgroundViewKey;
         
         [self.currentKeyWindow removeFromSuperview];
         self.currentKeyWindow = nil;
-        
-        if(self.appearanceMessageFontBeforeChanging){
-            [XIAlertView appearance].messageFont = self.appearanceMessageFontBeforeChanging;
-        }
         
         XIAlertView *nextAlertView = [[XIAlertViewQueue sharedQueue] dequeue];
         if(nextAlertView){
@@ -562,6 +570,8 @@ static void* __backgroundViewKey = &__backgroundViewKey;
     UILabel *_titleLabel;
     UILabel *_messageLabel;
     NSMutableArray *_constraints;
+    BOOL needResize;
+    CGSize contentSize;
 }
 @synthesize titleLabel=_titleLabel;
 @synthesize messageLabel=_messageLabel;
@@ -609,23 +619,29 @@ static void* __backgroundViewKey = &__backgroundViewKey;
 
 - (void)setTitle:(NSString *)title message:(NSString *)message
 {
-    self.titleLabel.text = title;
+    if(![self.titleLabel.text isEqualToString:title] ||
+       ![self.messageLabel.text isEqualToString:message]){
+        needResize = YES;
+    }
     
-    if(!title||title.length==0){
-        self.alertView.appearanceMessageFontBeforeChanging = [XIAlertView appearance].messageFont;
-        [XIAlertView appearance].messageFont = [XIAlertView appearance].titleFont?:[UIFont boldSystemFontOfSize:17.0f];
+    if(!title || title.length==0){
+        if(message && message.length>0){
+            self.titleLabel.text = message;
+            self.titleLabel.textColor = [XIAlertView appearance].messageColor?[XIAlertView appearance].messageColor:[UIColor blackColor];
+        }
     }
     else{
-        self.alertView.appearanceMessageFontBeforeChanging = nil;
+        self.titleLabel.text = title;
+        self.titleLabel.textColor = [XIAlertView appearance].messageColor?[XIAlertView appearance].messageColor:[UIColor blackColor];
+        
+        self.messageLabel.text = message;
+        self.messageLabel.textColor = [XIAlertView appearance].messageColor?[XIAlertView appearance].messageColor:[UIColor blackColor];
     }
-    self.messageLabel.font = [XIAlertView appearance].messageFont;
-    self.messageLabel.text = message;
     
     [self setNeedsUpdateConstraints];
     [self invalidateIntrinsicContentSize];
 }
 
-// 是否显示自定义的视图
 - (BOOL)isCustomContentView
 {
     return !CGSizeEqualToSize(self.preferredFrameSize, CGSizeZero);
@@ -641,6 +657,10 @@ static void* __backgroundViewKey = &__backgroundViewKey;
 
 - (CGSize)getFitSize
 {
+    if(!needResize){
+        return contentSize;
+    }
+    
     CGFloat resHeight = 0;
     CGSize aSize;
     CGFloat preferredTextWidth = kDefaultContainerWidth-self.contentInsets.left-self.contentInsets.right;
@@ -664,8 +684,10 @@ static void* __backgroundViewKey = &__backgroundViewKey;
     if(resHeight<kAlertContentViewMinHeight){
         resHeight = kAlertContentViewMinHeight;
     }
-    // The 'resHeight' must be rounded, or else it may cause UI issue.
-    return CGSizeMake(kDefaultContainerWidth, round(resHeight));
+    // The resHeight must be rounded, or else it may cause UI issue.
+    contentSize = CGSizeMake(kDefaultContainerWidth, round(resHeight));
+    
+    return contentSize;
 }
 
 - (void)setNeedsUpdateConstraints
@@ -767,13 +789,6 @@ static void* __backgroundViewKey = &__backgroundViewKey;
                                                              attribute:NSLayoutAttributeRight
                                                             multiplier:1
                                                               constant:-self.contentInsets.right]];
-        [_constraints addObject:[NSLayoutConstraint constraintWithItem:_messageLabel
-                                                             attribute:NSLayoutAttributeBottom
-                                                             relatedBy:NSLayoutRelationLessThanOrEqual
-                                                                toItem:self
-                                                             attribute:NSLayoutAttributeBottom
-                                                            multiplier:1
-                                                              constant:-self.contentInsets.bottom]];
         
         CGFloat preferredTextWidth = kDefaultContainerWidth-self.contentInsets.left-self.contentInsets.right;
         CGSize aSize = SIZE_LABEL(_messageLabel.text, _messageLabel.font, CGSizeMake(preferredTextWidth, MAXFLOAT));
@@ -811,6 +826,18 @@ static void* __backgroundViewKey = &__backgroundViewKey;
     return self;
 }
 
+- (void)prepareViews
+{
+    self.backgroundColor = [UIColor whiteColor];
+    _blurEnabled = YES;
+    if (!_backgroundView) {
+        _backgroundView = [[UIView alloc] initWithFrame:self.bounds];
+        _backgroundView.alpha = 1;
+        _backgroundView.backgroundColor = [UIColor whiteColor];
+        [self addSubview:_backgroundView];
+    }
+}
+
 + (BOOL)canBlur
 {
     id class = NSClassFromString(@"UIVisualEffectView");
@@ -831,18 +858,6 @@ static void* __backgroundViewKey = &__backgroundViewKey;
     _blurEnabled = enabled;
     if(_backgroundView){
         _backgroundView.alpha = _blurEnabled?0.00:0.98;
-    }
-}
-
-- (void)prepareViews
-{
-    self.backgroundColor = [UIColor whiteColor];
-    _blurEnabled = YES;
-    if (!_backgroundView) {
-        _backgroundView = [[UIView alloc] initWithFrame:self.bounds];
-        _backgroundView.alpha = 1;
-        _backgroundView.backgroundColor = [UIColor whiteColor];
-        [self addSubview:_backgroundView];
     }
 }
 
@@ -874,45 +889,7 @@ static void* __backgroundViewKey = &__backgroundViewKey;
 ////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
-static NSCache *alertButtonItem_imageCache;
 @implementation XIAlertButtonItem
-
-+ (void)initialize
-{
-    if (self == [XIAlertButtonItem class]) {
-        static dispatch_once_t onceToken;
-        dispatch_once(&onceToken, ^{
-            alertButtonItem_imageCache = [[NSCache alloc] init];
-        });
-    }
-}
-
-+ (NSCache *)imageCache
-{
-    if(alertButtonItem_imageCache){
-        return alertButtonItem_imageCache;
-    }
-    alertButtonItem_imageCache = [[NSCache alloc] init];
-    return alertButtonItem_imageCache;
-}
-
-+ (UIImage *)imageFromColor:(UIColor *)color withSize:(CGSize)size
-{
-    UIImage *image = [[self imageCache] objectForKey:@"highlighted"];
-    if(image){
-        return image;
-    }
-    
-    CGRect rect = CGRectMake(0, 0, size.width, size.height);
-    UIGraphicsBeginImageContext(rect.size);
-    CGContextRef context = UIGraphicsGetCurrentContext();
-    CGContextSetFillColorWithColor(context, [color CGColor]);
-    CGContextFillRect(context, rect);
-    image = UIGraphicsGetImageFromCurrentImageContext();
-    [[self imageCache] setObject:image forKey:@"highlighted"];
-    UIGraphicsEndImageContext();
-    return image;
-}
 
 - (instancetype)initWithFrame:(CGRect)frame
 {
@@ -921,9 +898,6 @@ static NSCache *alertButtonItem_imageCache;
         self.userInteractionEnabled = YES;
         [self addTarget:self action:@selector(touchUpInside:) forControlEvents:UIControlEventTouchUpInside];
         
-        [self setBackgroundImage:[XIAlertButtonItem imageFromColor:[UIColor colorWithWhite:1.0 alpha:0.35] withSize:CGSizeMake(5, 5)]
-                        forState:UIControlStateHighlighted];
-        
         _backgroundView = [[XIBlurSupportedBackgroundView alloc] initWithFrame:self.bounds];
         _backgroundView.userInteractionEnabled = NO;
         _backgroundView.autoresizingMask = UIViewAutoresizingFlexibleWidth|UIViewAutoresizingFlexibleHeight;
@@ -931,6 +905,19 @@ static NSCache *alertButtonItem_imageCache;
         _backgroundView.blurEnabled = [XIBlurSupportedBackgroundView canBlur];
     }
     return self;
+}
+
+- (void)setHighlighted:(BOOL)highlighted
+{
+    [super setHighlighted:highlighted];
+    if(highlighted){
+        _backgroundView.backgroundColor = [UIColor colorWithWhite:0.85 alpha:0.65];
+        _backgroundView.blurView.effect = [UIBlurEffect effectWithStyle:UIBlurEffectStyleLight];
+    }
+    else{
+        _backgroundView.backgroundColor = [UIColor clearColor];
+        _backgroundView.blurView.effect = [UIBlurEffect effectWithStyle:UIBlurEffectStyleExtraLight];
+    }
 }
 
 - (void)touchUpInside:(UIButton *)btn
@@ -952,6 +939,7 @@ static NSCache *alertButtonItem_imageCache;
 {
     [super viewDidLoad];
     self.view.backgroundColor = [UIColor clearColor];
+    self.backgroundView.cropSize = self.alertView.intrinsicContentSize;
     [self.view insertSubview:self.alertView aboveSubview:self.backgroundView];
     
     self.alertView.translatesAutoresizingMaskIntoConstraints = NO;
@@ -1015,6 +1003,7 @@ static NSCache *alertButtonItem_imageCache;
 {
     return _rootViewControllerPreferredStatusBarStyle;
 }
+
 @end
 
 ////////////////////////////////////////////////////////////////////////////////////////////////

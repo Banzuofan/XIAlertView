@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0D7F4DF91D96673900F493B1 /* XIAlertModalBackgroundView.m in Sources */ = {isa = PBXBuildFile; fileRef = 0D7F4DF81D96673900F493B1 /* XIAlertModalBackgroundView.m */; };
 		0DC9B5F81D40A2A2002AC776 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 0DC9B5F71D40A2A2002AC776 /* main.m */; };
 		0DC9B5FB1D40A2A2002AC776 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 0DC9B5FA1D40A2A2002AC776 /* AppDelegate.m */; };
 		0DC9B5FE1D40A2A2002AC776 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 0DC9B5FD1D40A2A2002AC776 /* ViewController.m */; };
@@ -18,6 +19,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		0D7F4DF71D96673900F493B1 /* XIAlertModalBackgroundView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = XIAlertModalBackgroundView.h; sourceTree = "<group>"; };
+		0D7F4DF81D96673900F493B1 /* XIAlertModalBackgroundView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = XIAlertModalBackgroundView.m; sourceTree = "<group>"; };
 		0DC9B5F31D40A2A2002AC776 /* XIAlertView.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = XIAlertView.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		0DC9B5F71D40A2A2002AC776 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		0DC9B5F91D40A2A2002AC776 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
@@ -45,6 +48,19 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		0D7F4DFA1D96674200F493B1 /* Class */ = {
+			isa = PBXGroup;
+			children = (
+				0D7F4DF71D96673900F493B1 /* XIAlertModalBackgroundView.h */,
+				0D7F4DF81D96673900F493B1 /* XIAlertModalBackgroundView.m */,
+				0DF889721D864AA6008CD8C3 /* XIMessageBoardView.h */,
+				0DF889731D864AA6008CD8C3 /* XIMessageBoardView.m */,
+				0DC9B60D1D40A32A002AC776 /* XIAlertView.h */,
+				0DC9B60E1D40A32A002AC776 /* XIAlertView.m */,
+			);
+			name = Class;
+			sourceTree = "<group>";
+		};
 		0DC9B5EA1D40A2A2002AC776 = {
 			isa = PBXGroup;
 			children = (
@@ -64,10 +80,7 @@
 		0DC9B5F51D40A2A2002AC776 /* XIAlertView */ = {
 			isa = PBXGroup;
 			children = (
-				0DF889721D864AA6008CD8C3 /* XIMessageBoardView.h */,
-				0DF889731D864AA6008CD8C3 /* XIMessageBoardView.m */,
-				0DC9B60D1D40A32A002AC776 /* XIAlertView.h */,
-				0DC9B60E1D40A32A002AC776 /* XIAlertView.m */,
+				0D7F4DFA1D96674200F493B1 /* Class */,
 				0DC9B5F91D40A2A2002AC776 /* AppDelegate.h */,
 				0DC9B5FA1D40A2A2002AC776 /* AppDelegate.m */,
 				0DC9B5FC1D40A2A2002AC776 /* ViewController.h */,
@@ -160,6 +173,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0D7F4DF91D96673900F493B1 /* XIAlertModalBackgroundView.m in Sources */,
 				0DC9B60F1D40A32A002AC776 /* XIAlertView.m in Sources */,
 				0DF889741D864AA6008CD8C3 /* XIMessageBoardView.m in Sources */,
 				0DC9B5FE1D40A2A2002AC776 /* ViewController.m in Sources */,
