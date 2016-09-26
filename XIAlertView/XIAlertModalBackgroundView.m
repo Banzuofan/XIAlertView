@@ -8,6 +8,8 @@
 
 #import "XIAlertModalBackgroundView.h"
 
+extern CGFloat kDefaultCornerRadius;
+
 void XICreateRoundedRectPath(CGContextRef context, CGRect rect, CGFloat arcRadius)
 {
     CGFloat halfSmallestSide = (rect.size.width > rect.size.height ? rect.size.height : rect.size.width)/2.0;
@@ -125,17 +127,17 @@ void XICreateRoundedRectPath(CGContextRef context, CGRect rect, CGFloat arcRadiu
         
         CGContextSaveGState(ctx);
         
-        XICreateRoundedRectPath(ctx,_cropRect, 8);
+        XICreateRoundedRectPath(ctx,_cropRect, kDefaultCornerRadius);
         CGContextSetFillColorWithColor(ctx, [UIColor colorWithWhite:0 alpha:0.1].CGColor);
         CGContextFillPath(ctx);
         
         CGContextRestoreGState(ctx);
         
-        XICreateRoundedRectPath(ctx,_cropRect, 8);
+        XICreateRoundedRectPath(ctx,_cropRect, kDefaultCornerRadius);
         CGContextAddRect(ctx,CGContextGetClipBoundingBox(ctx));
         CGContextEOClip(ctx);
     }
-
+    
     CGContextSetFillColorWithColor(ctx, fillColor.CGColor);
     CGContextFillRect(ctx, self.bounds);
 }

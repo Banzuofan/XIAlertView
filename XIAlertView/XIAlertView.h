@@ -25,6 +25,8 @@
 
 #import <UIKit/UIKit.h>
 
+extern CGFloat kDefaultCornerRadius;
+
 typedef NS_ENUM(NSInteger, XIAlertActionStyle) {
     XIAlertActionStyleDefault = 0,
     XIAlertActionStyleCancel,

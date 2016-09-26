@@ -33,6 +33,8 @@ static CGFloat const kAlertContentViewMinHeight = 80.0;
 static CGFloat const kAlertButtonHeight = 44.0;
 static CGFloat const kMaxMessageHeight = 220;
 
+CGFloat kDefaultCornerRadius = 8;
+
 #define kAlertLineSpace 0.5
 #define kButtonTitleColor [UIColor colorWithRed:0.0f green:0.5f blue:1.0f alpha:1.0f]
 #define kDestructiveButtonTitleColor [UIColor colorWithRed:0.988 green:0.239 blue:0.224 alpha:1.00]
@@ -143,6 +145,13 @@ static void* __backgroundViewKey = &__backgroundViewKey;
         [XIAlertView appearance].messageColor = [UIColor blackColor];
         [XIAlertView appearance].titleFont = [UIFont boldSystemFontOfSize:17.0];
         [XIAlertView appearance].messageFont = [UIFont systemFontOfSize:14.0];
+        
+        static dispatch_once_t onceToken;
+        dispatch_once(&onceToken, ^{
+            if([[[UIDevice currentDevice] systemVersion] floatValue] >= 9.0f){
+                kDefaultCornerRadius = 12;
+            }
+        });
     }
 }
 
@@ -150,7 +159,7 @@ static void* __backgroundViewKey = &__backgroundViewKey;
 {
     if(self=[super initWithFrame:frame]){
         self.userInteractionEnabled = YES;
-        self.layer.cornerRadius = 8;
+        self.layer.cornerRadius = kDefaultCornerRadius;
         self.clipsToBounds = YES;
         
         _buttons = @[].mutableCopy;
