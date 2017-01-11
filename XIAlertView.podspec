@@ -2,13 +2,13 @@
 Pod::Spec.new do |s|
 
   s.name         = "XIAlertView"
-  s.version      = "1.0.0"
+  s.version      = "1.0.1"
   s.summary      = "A short description of XIAlertView."
   s.description  = "https://github.com/Banzuofan/XIAlertView"
 
   s.homepage     = "https://github.com/Banzuofan/XIAlertView"
 
-  s.license      = "MIT FREE OF USE"
+  s.license      = "MIT(FREE OF USE)"
   
   s.author             = { "YXLONG" => "banzuofan@hotmial.com" }
 
@@ -16,6 +16,6 @@ Pod::Spec.new do |s|
 
   s.source       = { :git => "https://github.com/Banzuofan/XIAlertView.git", :tag => "#{s.version}" }
 
-  s.source_files  = "src/**/*"
+  s.source_files  = "src"
   s.exclude_files = "Classes/Exclude"
 end
