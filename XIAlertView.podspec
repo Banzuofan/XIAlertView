@@ -16,6 +16,6 @@ Pod::Spec.new do |s|
 
   s.source       = { :git => "https://github.com/Banzuofan/XIAlertView.git", :tag => "#{s.version}" }
 
-  s.source_files  = "classes"
+  s.source_files  = "src/**/*"
   s.exclude_files = "Classes/Exclude"
 end
