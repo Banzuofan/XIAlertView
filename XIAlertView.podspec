@@ -14,8 +14,8 @@ Pod::Spec.new do |s|
 
   s.platform    = :ios, "8.0"    
 
-  s.source       = { :git => "https://github.com/Banzuofan/XIAlertView.git", :tag => "1.0.0" }
+  s.source       = { :git => "https://github.com/Banzuofan/XIAlertView.git", :tag => "#{s.version}" }
 
-  s.source_files  = "pods/**/*.{h, m}"
-
+  s.source_files  = "pods/**/*.{h,m}"
+  s.exclude_files = "Classes/Exclude"
 end
