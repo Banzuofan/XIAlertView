@@ -7,6 +7,14 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0D1D617E1E34847400E1BC38 /* XIAlertSDK.h in Headers */ = {isa = PBXBuildFile; fileRef = 0D1D617C1E34847400E1BC38 /* XIAlertSDK.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		0D1D61811E34847400E1BC38 /* XIAlertSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0D1D617A1E34847400E1BC38 /* XIAlertSDK.framework */; };
+		0D1D61821E34847400E1BC38 /* XIAlertSDK.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 0D1D617A1E34847400E1BC38 /* XIAlertSDK.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		0D1D61871E34849000E1BC38 /* XIAlertModalBackgroundView.m in Sources */ = {isa = PBXBuildFile; fileRef = 0D7F4DF81D96673900F493B1 /* XIAlertModalBackgroundView.m */; };
+		0D1D61881E34849000E1BC38 /* XIAlertView.m in Sources */ = {isa = PBXBuildFile; fileRef = 0DC9B60E1D40A32A002AC776 /* XIAlertView.m */; };
+		0D1D61891E34849B00E1BC38 /* XIAlertModalBackgroundView.h in Headers */ = {isa = PBXBuildFile; fileRef = 0D7F4DF71D96673900F493B1 /* XIAlertModalBackgroundView.h */; };
+		0D1D618A1E34849B00E1BC38 /* XIAlertView.h in Headers */ = {isa = PBXBuildFile; fileRef = 0DC9B60D1D40A32A002AC776 /* XIAlertView.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		0D1D618B1E3484A900E1BC38 /* XIAlertView.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 0DC9B60D1D40A32A002AC776 /* XIAlertView.h */; };
 		0D7F4DF91D96673900F493B1 /* XIAlertModalBackgroundView.m in Sources */ = {isa = PBXBuildFile; fileRef = 0D7F4DF81D96673900F493B1 /* XIAlertModalBackgroundView.m */; };
 		0DC9B5F81D40A2A2002AC776 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 0DC9B5F71D40A2A2002AC776 /* main.m */; };
 		0DC9B5FB1D40A2A2002AC776 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 0DC9B5FA1D40A2A2002AC776 /* AppDelegate.m */; };
@@ -18,7 +26,44 @@
 		0DF889741D864AA6008CD8C3 /* XIMessageBoardView.m in Sources */ = {isa = PBXBuildFile; fileRef = 0DF889731D864AA6008CD8C3 /* XIMessageBoardView.m */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		0D1D617F1E34847400E1BC38 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0DC9B5EB1D40A2A2002AC776 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 0D1D61791E34847400E1BC38;
+			remoteInfo = XIAlertSDK;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		0D1D616C1E34837400E1BC38 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				0D1D61821E34847400E1BC38 /* XIAlertSDK.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		0D1D61861E34848600E1BC38 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 7;
+			files = (
+				0D1D618B1E3484A900E1BC38 /* XIAlertView.h in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
+		0D1D617A1E34847400E1BC38 /* XIAlertSDK.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = XIAlertSDK.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		0D1D617C1E34847400E1BC38 /* XIAlertSDK.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = XIAlertSDK.h; sourceTree = "<group>"; };
+		0D1D617D1E34847400E1BC38 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		0D7F4DF71D96673900F493B1 /* XIAlertModalBackgroundView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = XIAlertModalBackgroundView.h; sourceTree = "<group>"; };
 		0D7F4DF81D96673900F493B1 /* XIAlertModalBackgroundView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = XIAlertModalBackgroundView.m; sourceTree = "<group>"; };
 		0DC9B5F31D40A2A2002AC776 /* XIAlertView.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = XIAlertView.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -38,16 +83,33 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		0DC9B5F01D40A2A2002AC776 /* Frameworks */ = {
+		0D1D61761E34847400E1BC38 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		0DC9B5F01D40A2A2002AC776 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0D1D61811E34847400E1BC38 /* XIAlertSDK.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		0D1D617B1E34847400E1BC38 /* XIAlertSDK */ = {
+			isa = PBXGroup;
+			children = (
+				0D1D617C1E34847400E1BC38 /* XIAlertSDK.h */,
+				0D1D617D1E34847400E1BC38 /* Info.plist */,
+			);
+			path = XIAlertSDK;
+			sourceTree = "<group>";
+		};
 		0D7F4DFA1D96674200F493B1 /* Class */ = {
 			isa = PBXGroup;
 			children = (
@@ -65,6 +127,7 @@
 			isa = PBXGroup;
 			children = (
 				0DC9B5F51D40A2A2002AC776 /* XIAlertView */,
+				0D1D617B1E34847400E1BC38 /* XIAlertSDK */,
 				0DC9B5F41D40A2A2002AC776 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -73,6 +136,7 @@
 			isa = PBXGroup;
 			children = (
 				0DC9B5F31D40A2A2002AC776 /* XIAlertView.app */,
+				0D1D617A1E34847400E1BC38 /* XIAlertSDK.framework */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -104,7 +168,39 @@
 		};
 /* End PBXGroup section */
 
+/* Begin PBXHeadersBuildPhase section */
+		0D1D61771E34847400E1BC38 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0D1D617E1E34847400E1BC38 /* XIAlertSDK.h in Headers */,
+				0D1D618A1E34849B00E1BC38 /* XIAlertView.h in Headers */,
+				0D1D61891E34849B00E1BC38 /* XIAlertModalBackgroundView.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
 /* Begin PBXNativeTarget section */
+		0D1D61791E34847400E1BC38 /* XIAlertSDK */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 0D1D61831E34847400E1BC38 /* Build configuration list for PBXNativeTarget "XIAlertSDK" */;
+			buildPhases = (
+				0D1D61751E34847400E1BC38 /* Sources */,
+				0D1D61761E34847400E1BC38 /* Frameworks */,
+				0D1D61771E34847400E1BC38 /* Headers */,
+				0D1D61781E34847400E1BC38 /* Resources */,
+				0D1D61861E34848600E1BC38 /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = XIAlertSDK;
+			productName = XIAlertSDK;
+			productReference = 0D1D617A1E34847400E1BC38 /* XIAlertSDK.framework */;
+			productType = "com.apple.product-type.framework";
+		};
 		0DC9B5F21D40A2A2002AC776 /* XIAlertView */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 0DC9B60A1D40A2A2002AC776 /* Build configuration list for PBXNativeTarget "XIAlertView" */;
@@ -112,10 +208,12 @@
 				0DC9B5EF1D40A2A2002AC776 /* Sources */,
 				0DC9B5F01D40A2A2002AC776 /* Frameworks */,
 				0DC9B5F11D40A2A2002AC776 /* Resources */,
+				0D1D616C1E34837400E1BC38 /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				0D1D61801E34847400E1BC38 /* PBXTargetDependency */,
 			);
 			name = XIAlertView;
 			productName = XIAlertView;
@@ -131,9 +229,12 @@
 				LastUpgradeCheck = 0730;
 				ORGANIZATIONNAME = yxlong;
 				TargetAttributes = {
+					0D1D61791E34847400E1BC38 = {
+						CreatedOnToolsVersion = 8.2.1;
+						ProvisioningStyle = Automatic;
+					};
 					0DC9B5F21D40A2A2002AC776 = {
 						CreatedOnToolsVersion = 7.3.1;
-						DevelopmentTeam = FXSX67BNQ6;
 					};
 				};
 			};
@@ -151,11 +252,19 @@
 			projectRoot = "";
 			targets = (
 				0DC9B5F21D40A2A2002AC776 /* XIAlertView */,
+				0D1D61791E34847400E1BC38 /* XIAlertSDK */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		0D1D61781E34847400E1BC38 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		0DC9B5F11D40A2A2002AC776 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -169,6 +278,15 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		0D1D61751E34847400E1BC38 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0D1D61871E34849000E1BC38 /* XIAlertModalBackgroundView.m in Sources */,
+				0D1D61881E34849000E1BC38 /* XIAlertView.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		0DC9B5EF1D40A2A2002AC776 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -183,6 +301,14 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		0D1D61801E34847400E1BC38 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 0D1D61791E34847400E1BC38 /* XIAlertSDK */;
+			targetProxy = 0D1D617F1E34847400E1BC38 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
 		0DC9B5FF1D40A2A2002AC776 /* Main.storyboard */ = {
@@ -204,6 +330,69 @@
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
+		0D1D61841E34847400E1BC38 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = (
+					"$(ARCHS_STANDARD)",
+					armv7s,
+				);
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DEVELOPMENT_TEAM = "";
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				INFOPLIST_FILE = XIAlertSDK/Info.plist;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				ONLY_ACTIVE_ARCH = NO;
+				PRODUCT_BUNDLE_IDENTIFIER = com.yxlong.XIAlertSDK;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = 1;
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Debug;
+		};
+		0D1D61851E34847400E1BC38 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = (
+					"$(ARCHS_STANDARD)",
+					armv7s,
+				);
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DEVELOPMENT_TEAM = "";
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				INFOPLIST_FILE = XIAlertSDK/Info.plist;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = com.yxlong.XIAlertSDK;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = 1;
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Release;
+		};
 		0DC9B6081D40A2A2002AC776 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -292,6 +481,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = XIAlertView/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
@@ -307,6 +497,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = XIAlertView/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
@@ -319,6 +510,14 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		0D1D61831E34847400E1BC38 /* Build configuration list for PBXNativeTarget "XIAlertSDK" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				0D1D61841E34847400E1BC38 /* Debug */,
+				0D1D61851E34847400E1BC38 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+		};
 		0DC9B5EE1D40A2A2002AC776 /* Build configuration list for PBXProject "XIAlertView" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

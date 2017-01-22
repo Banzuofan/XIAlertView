@@ -4,6 +4,11 @@
 <dict>
 	<key>SchemeUserState</key>
 	<dict>
+		<key>XIAlertSDK.xcscheme</key>
+		<dict>
+			<key>orderHint</key>
+			<integer>2</integer>
+		</dict>
 		<key>XIAlertView.xcscheme</key>
 		<dict>
 			<key>orderHint</key>
@@ -12,6 +17,16 @@
 	</dict>
 	<key>SuppressBuildableAutocreation</key>
 	<dict>
+		<key>0D1D615F1E34837400E1BC38</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>0D1D61791E34847400E1BC38</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
 		<key>0DC9B5F21D40A2A2002AC776</key>
 		<dict>
 			<key>primary</key>
