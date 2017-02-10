@@ -79,12 +79,7 @@ static void* __backgroundViewKey = &__backgroundViewKey;
 
 @interface XIBlurSupportedBackgroundView : UIView
 @property(nonatomic, strong) UIView *backgroundView;
-#if __IPHONE_OS_VERSION_MAX_ALLOWED >= 80000
 @property(nonatomic, strong) UIVisualEffectView *blurView;
-#endif
-@property(nonatomic, assign) BOOL blurEnabled;
-- (void)prepareViews;
-+ (BOOL)canBlur;
 - (void)applyBlurEffect;
 - (void)disableBlurEffect;
 @end
@@ -487,16 +482,16 @@ static void* __backgroundViewKey = &__backgroundViewKey;
     [self.currentKeyWindow makeKeyAndVisible];
     
     // Fix UI issue that the size of alert is less than the size of the cropped area.
-    dispatch_block_t refreshUI = ^{
+    dispatch_block_t _updateAppearance = ^{
         [self updateUILayouts];
         self.currentKeyWindow.rootViewController.backgroundView.cropSize = self.intrinsicContentSize;
     };
     
-    refreshUI();
+    _updateAppearance();
     
     [self showWithAnimation:YES completion:^{
         
-        refreshUI();
+        _updateAppearance();
         
         [XIAlertViewQueue sharedQueue].animating = NO;
         
@@ -590,8 +585,6 @@ static void* __backgroundViewKey = &__backgroundViewKey;
     if(self=[super initWithFrame:frame]){
         self.userInteractionEnabled = YES;
         self.backgroundColor = [UIColor whiteColor];
-        
-        self.blurEnabled = [XIAlertContentView canBlur];
         _constraints = @[].mutableCopy;
         _preferredFrameSize = CGSizeZero;
     }
@@ -821,78 +814,45 @@ static void* __backgroundViewKey = &__backgroundViewKey;
 {
     self = [super initWithFrame:frame];
     if (self) {
-        [self prepareViews];
+        if (!_backgroundView) {
+            _backgroundView = [[UIView alloc] initWithFrame:self.bounds];
+            _backgroundView.alpha = 1.0;
+            _backgroundView.backgroundColor = [UIColor whiteColor];
+            [self addSubview:_backgroundView];
+        }
     }
     return self;
-}
-
-- (id)init
-{
-    self = [super init];
-    if (self) {
-        [self prepareViews];
-    }
-    return self;
-}
-
-- (void)prepareViews
-{
-    self.backgroundColor = [UIColor whiteColor];
-    _blurEnabled = YES;
-    if (!_backgroundView) {
-        _backgroundView = [[UIView alloc] initWithFrame:self.bounds];
-        _backgroundView.alpha = 1;
-        _backgroundView.backgroundColor = [UIColor whiteColor];
-        [self addSubview:_backgroundView];
-    }
-}
-
-+ (BOOL)canBlur
-{
-    id class = NSClassFromString(@"UIVisualEffectView");
-    return class?YES:NO;
 }
 
 - (void)setFrame:(CGRect)frame
 {
     [super setFrame:frame];
-#if __IPHONE_OS_VERSION_MAX_ALLOWED >= 80000
+
     _blurView.frame = self.bounds;
-#endif
     _backgroundView.frame = self.bounds;
 }
 
-- (void)setBlurEnabled:(BOOL)enabled
-{
-    _blurEnabled = enabled;
-    if(_backgroundView){
-        _backgroundView.alpha = _blurEnabled?0.00:0.98;
-    }
-}
-
 - (void)applyBlurEffect{
+    
     self.backgroundColor = [UIColor clearColor];
-#if __IPHONE_OS_VERSION_MAX_ALLOWED >= 80000
     if(!_blurView){
         _blurView = [[UIVisualEffectView alloc] initWithFrame:self.bounds];
         _blurView.effect = [UIBlurEffect effectWithStyle:UIBlurEffectStyleExtraLight];
         [self addSubview:_blurView];
         [self sendSubviewToBack:_blurView];
     }
-#endif
-    self.blurEnabled = [[self class] canBlur];
+    _backgroundView.alpha = 0.45;
 }
 
 - (void)disableBlurEffect
 {
     _backgroundView.alpha = 0.98;
-#if __IPHONE_OS_VERSION_MAX_ALLOWED >= 80000
     if(_blurView){
         [_blurView removeFromSuperview];
         _blurView = nil;
     }
-#endif
 }
+
 @end
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -911,7 +871,6 @@ static void* __backgroundViewKey = &__backgroundViewKey;
         _backgroundView.userInteractionEnabled = NO;
         _backgroundView.autoresizingMask = UIViewAutoresizingFlexibleWidth|UIViewAutoresizingFlexibleHeight;
         [self addSubview:_backgroundView];
-        _backgroundView.blurEnabled = [XIBlurSupportedBackgroundView canBlur];
     }
     return self;
 }

@@ -24,7 +24,7 @@ UIImage *imageFromColor(UIColor *color, CGSize size){
 #define TitleColor [UIColor colorWithRed:0 green:115.0/255.0 blue:146.0/255.0 alpha:1]
 #define ButtonBgColor TitleColor
 #define ContentInsetX 15
-#define ButtinTitle @"I See"
+#define ButtinTitle @"Got it"
 
 @implementation XIMessageBoardView
 {
@@ -36,7 +36,7 @@ UIImage *imageFromColor(UIColor *color, CGSize size){
 - (instancetype)initWithFrame:(CGRect)frame title:(NSString *)title message:(NSString *)message
 {
     if(self=[super initWithFrame:frame]){
-        self.backgroundColor = [UIColor whiteColor];
+        self.backgroundColor = [UIColor clearColor];
         
         titleLabel = [[UILabel alloc] initWithFrame:CGRectZero];
         titleLabel.text = title;
