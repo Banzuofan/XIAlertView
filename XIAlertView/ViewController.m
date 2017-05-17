@@ -10,6 +10,10 @@
 #import "XIAlertView.h"
 #import "XIMessageBoardView.h"
 
+#import "XIActionSheetHeaderView.h"
+#import "XIActionSheet.h"
+#import "XIActionSheetButtonItem.h"
+
 @interface ViewController ()<UITableViewDelegate, UITableViewDataSource>
 @property(nonatomic, strong) UITableView *contentTable;
 @end
@@ -23,7 +27,16 @@
     [super viewDidLoad];
     // Do any additional setup after loading the view, typically from a nib.
     
-    items = @[@"Simple Alerts", @"Multiline text Alerts", @"Custom Style Alert", @"System Alert"];
+    items = @[@"Simple Alerts",
+              @"Multiline text Alerts",
+              @"Custom Style Alert",
+              @"System Alert",
+              @"System ActionSheet",
+              @"Custom ActionSheet",
+              @"ActionSheet-Buttons-6",
+              @"ActionSheet-Buttons-more than 6",
+              @"ActionSheet-Text-short",
+              @"ActionSheet-Text-long"];
     
     _contentTable = [[UITableView alloc] initWithFrame:self.view.bounds style:UITableViewStylePlain];
     _contentTable.separatorStyle = UITableViewCellSeparatorStyleNone;
@@ -41,7 +54,39 @@
     [bgSwitch addTarget:self action:@selector(valueChanged:) forControlEvents:UIControlEventValueChanged];
     
     
+//    XIActionSheetHeaderView *header = [[XIActionSheetHeaderView alloc] initWithFrame:CGRectZero];
+//    
+//    header.backgroundColor = [UIColor redColor];
+//    
+//    [header setTitle:@"Swift is a new programming language for iOS, OS X, and watchOS app development."];
+//    [header setMessage:@"Swift is a new programming language for iOS, OS X, and watchOS app development.Swift is a new programming language for iOS, OS X, and watchOS app development.Swift is a new programming language for iOS, OS X, and watchOS app development.Swift is a new programming language for iOS, OS X, and watchOS app development.Swift is a new programming language for iOS, OS X, and watchOS app development."];
+//    [self.view addSubview:header];
+//    
+//    header.translatesAutoresizingMaskIntoConstraints = NO;
+//    
+//    [header setContentHuggingPriority:751 forAxis:1];
+//    [header setContentHuggingPriority:751 forAxis:0];
+//    
+//    header.preferredMaxLayoutWidth = 300;
+//    
+//    NSArray *arr =  @[[NSLayoutConstraint constraintWithItem:header
+//                                                   attribute:NSLayoutAttributeCenterX
+//                                                   relatedBy:NSLayoutRelationEqual
+//                                                      toItem:self.view
+//                                                   attribute:NSLayoutAttributeCenterX
+//                                                  multiplier:1
+//                                                    constant:0],
+//                      [NSLayoutConstraint constraintWithItem:header
+//                                                   attribute:NSLayoutAttributeTop
+//                                                   relatedBy:NSLayoutRelationEqual
+//                                                      toItem:self.view
+//                                                   attribute:NSLayoutAttributeTop
+//                                                  multiplier:1
+//                                                    constant:40]];
+//    [self.view addConstraints:arr];
     
+    
+                      
 }
 
 - (void)valueChanged:(UISwitch *)switchC
@@ -68,6 +113,7 @@
     if(!cell){
         cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:cellId];
         cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+        cell.backgroundColor = [UIColor colorWithWhite:1 alpha:0.35];
     }
     cell.textLabel.text = items[indexPath.row];
     return cell;
@@ -155,7 +201,7 @@
             [weak_alert dismiss];
         }];
     }
-    else{
+    else if(indexPath.row==3){
         __block UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"UIAlertView"
                                                                 message:message
                                                                delegate:nil
@@ -189,6 +235,80 @@
                 });
             });
         });
+    }
+    else if(indexPath.row==4){
+        UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"Swift is a new programming language"
+                                                                       message:@"You can define Swift enumerations to store associated values,You can define Swift enumerations to store associated values,You can define Swift enumerations to store associated values,You can define Swift enumerations to store associated values,You can define Swift enumerations to store associated values,You can define Swift enumerations to store associated values,You can define Swift enumerations to store associated values,You can define Swift enumerations to store associated values,You can define Swift enumerations to store associated values,You can define Swift enumerations to store associated values,You can define Swift enumerations to store associated values,You can define Swift enumerations to store associated values,You can define Swift enumerations to store associated values,You can define Swift enumerations to store associated values,You can define Swift enumerations to store associated values,You can define Swift enumerations to store associated values,You can define Swift enumerations to store associated values,You can define Swift enumerations to store associated values"
+                                                                preferredStyle:UIAlertControllerStyleActionSheet];
+        
+        [alert addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:^(UIAlertAction * _Nonnull action) {
+            
+        }]];
+        
+        [alert addAction:[UIAlertAction actionWithTitle:@"UIAlertActionStyleDestructive" style:UIAlertActionStyleDestructive handler:^(UIAlertAction * _Nonnull action) {
+            
+        }]];
+        
+        for(int i=0;i<10;i++){
+            [alert addAction:[UIAlertAction actionWithTitle:[NSString stringWithFormat:@"button%@",@(i)]  style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+                [[XIAlertView alertWithTitle:[NSString stringWithFormat:@"button%@",@(i)] message:nil cancelButtonTitle:@"OK"] show];
+            }]];
+        }
+        
+        [self presentViewController:alert animated:YES completion:nil];
+    }
+    else if(indexPath.row==5){
+        
+        XIActionSheet *actionSheet = [[XIActionSheet alloc] initWithTitle:@"Swift is a new programming language"
+                                                                  message:@"You can define Swift enumerations to store associated values,You can define Swift enumerations to store associated values,You can define Swift enumerations to store associated values,You can define Swift enumerations to store associated values,You can define Swift enumerations to store associated values,You can define Swift enumerations to store associated values,You can define Swift enumerations to store associated values,You can define Swift enumerations to store associated values,You can define Swift enumerations to store associated values,You can define Swift enumerations to store associated values,You can define Swift enumerations to store associated values,You can define Swift enumerations to store associated values,You can define Swift enumerations to store associated values,You can define Swift enumerations to store associated values,You can define Swift enumerations to store associated values,You can define Swift enumerations to store associated values,You can define Swift enumerations to store associated values,You can define Swift enumerations to store associated values"
+                                                        cancelButtonTitle:@"Cancel"];
+        [actionSheet addButtonWithTitle:@"StyleDestructive" style:XIActionSheetButtonStyleDestructive handler:^(XIActionSheet *actionSheet, XIActionSheetButtonItem *buttonItem) {
+            
+        }];
+        for(int i=0;i<10;i++){
+            [actionSheet addDefaultStyleButtonWithTitle:[NSString stringWithFormat:@"button%@",@(i)] handler:^(XIActionSheet *actionSheet, XIActionSheetButtonItem *buttonItem) {
+                [[XIAlertView alertWithTitle:[buttonItem titleForState:UIControlStateNormal] message:nil cancelButtonTitle:@"OK"] show];
+            }];
+        }
+        [actionSheet show];
+    }
+    else if(indexPath.row==6){
+        
+        XIActionSheet *actionSheet = [[XIActionSheet alloc] initWithTitle:@"Swift is a new programming language"
+                                                                  message:@""
+                                                        cancelButtonTitle:@"Cancel"];
+        for(int i=0;i<6;i++){
+            [actionSheet addDefaultStyleButtonWithTitle:[NSString stringWithFormat:@"button%@",@(i)] handler:^(XIActionSheet *actionSheet, XIActionSheetButtonItem *buttonItem) {
+                [[XIAlertView alertWithTitle:[buttonItem titleForState:UIControlStateNormal] message:nil cancelButtonTitle:@"OK"] show];
+            }];
+        }
+        [actionSheet show];
+    }
+    else if(indexPath.row==7){
+        
+        XIActionSheet *actionSheet = [[XIActionSheet alloc] initWithTitle:@"Swift is a new programming language"
+                                                                  message:@"You can define Swift enumerations to store associated values"
+                                                        cancelButtonTitle:@"Cancel"];
+        for(int i=0;i<12;i++){
+            [actionSheet addDefaultStyleButtonWithTitle:[NSString stringWithFormat:@"button%@",@(i)] handler:^(XIActionSheet *actionSheet, XIActionSheetButtonItem *buttonItem) {
+                [[XIAlertView alertWithTitle:[buttonItem titleForState:UIControlStateNormal] message:nil cancelButtonTitle:@"OK"] show];
+            }];
+        }
+        [actionSheet show];
+    }
+    else if(indexPath.row==8){
+        
+        XIActionSheet *actionSheet = [[XIActionSheet alloc] initWithTitle:@"Swift is a new programming language"
+                                                                  message:@"You can define Swift enumerations to store associated values,You can define Swift enumerations to store associated values,You can define Swift enumerations to store associated values,You can define Swift enumerations to store associated values,You can define Swift enumerations to store associated values,You can define Swift enumerations to store associated values"
+                                                        cancelButtonTitle:@"Cancel"];
+        [actionSheet show];
+    }
+    else if(indexPath.row==9){
+        
+        XIActionSheet *actionSheet = [[XIActionSheet alloc] initWithTitle:@"Swift is a new programming language"
+                                                                  message:@"You can define Swift enumerations to store associated values,You can define Swift enumerations to store associated values,You can define Swift enumerations to store associated values,You can define Swift enumerations to store associated values,You can define Swift enumerations to store associated values,You can define Swift enumerations to store associated values.You can define Swift enumerations to store associated values,You can define Swift enumerations to store associated values,You can define Swift enumerations to store associated values,You can define Swift enumerations to store associated values,You can define Swift enumerations to store associated values,You can define Swift enumerations to store associated values.You can define Swift enumerations to store associated values,You can define Swift enumerations to store associated values,You can define Swift enumerations to store associated values,You can define Swift enumerations to store associated values,You can define Swift enumerations to store associated values,You can define Swift enumerations to store associated values.You can define Swift enumerations to store associated values,You can define Swift enumerations to store associated values,You can define Swift enumerations to store associated values,You can define Swift enumerations to store associated values,You can define Swift enumerations to store associated values,You can define Swift enumerations to store associated values.You can define Swift enumerations to store associated values,You can define Swift enumerations to store associated values,You can define Swift enumerations to store associated values,You can define Swift enumerations to store associated values,You can define Swift enumerations to store associated values,You can define Swift enumerations to store associated values"
+                                                        cancelButtonTitle:@"Cancel"];
+        [actionSheet show];
     }
 }
 

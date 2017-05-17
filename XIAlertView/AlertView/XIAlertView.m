@@ -841,7 +841,7 @@ static void* __backgroundViewKey = &__backgroundViewKey;
         [self addSubview:_blurView];
         [self sendSubviewToBack:_blurView];
     }
-    _backgroundView.alpha = 0.45;
+    _backgroundView.alpha = 0.25;
 }
 
 - (void)disableBlurEffect
