@@ -24,6 +24,12 @@
 // THE SOFTWARE.
 
 #import <UIKit/UIKit.h>
+#import "UIView+XIAlertView.h"
+
+UIKIT_EXTERN NSNotificationName const XIAlertViewWillDismissNotification;
+UIKIT_EXTERN NSNotificationName const XIAlertViewDidDismissNotification;
+
+UIKIT_EXTERN NSString * const XIAlertViewRCEventDismiss;
 
 extern CGFloat kDefaultCornerRadius;
 
@@ -36,7 +42,8 @@ typedef NS_ENUM(NSInteger, XIAlertActionStyle) {
 typedef NS_ENUM(NSInteger, XICustomViewPresentationStyle) {
     Default = 0,
     MoveUp,
-    MoveDown
+    MoveDown,
+    StartupAD
 };
 
 @class XIAlertButtonItem;
@@ -49,6 +56,10 @@ typedef NS_ENUM(NSInteger, XICustomViewPresentationStyle) {
 - (instancetype)initWithTitle:(NSString *)title message:(NSString *)message cancelButtonTitle:(NSString *)cancelButtonTitle;
 - (instancetype)initWithCustomView:(UIView *)customView;
 - (instancetype)initWithCustomView:(UIView *)customView withPresentationStyle:(XICustomViewPresentationStyle)style;
+- (instancetype)initWithCustomView:(UIView *)customView
+                       blurEnabled:(BOOL)blurEnabled
+                      cornerRadius:(CGFloat)cornerRadius
+             withPresentationStyle:(XICustomViewPresentationStyle)style;
 - (void)addButtonWithTitle:(NSString *)title
                      style:(XIAlertActionStyle)style
                    handler:(void(^)(XIAlertView *alertView, XIAlertButtonItem *buttonItem))handler;
@@ -61,8 +72,19 @@ typedef NS_ENUM(NSInteger, XICustomViewPresentationStyle) {
 @interface XIAlertView (Creations)
 + (instancetype)alertWithTitle:(NSString *)title message:(NSString *)message cancelButtonTitle:(NSString *)cancelButtonTitle;
 + (instancetype)alertWithCustomView:(UIView *)customView withPresentationStyle:(XICustomViewPresentationStyle)style;
++ (instancetype)alertWithTitle:(NSString *)title
+                       message:(NSString *)message
+             cancelButtonTitle:(NSString *)cancelButtonTitle
+            confirmButtonTitle:(NSString *)confirmButtonTitle
+                 cancelHandler:(dispatch_block_t)cancelHandler
+                confirmHandler:(dispatch_block_t)confirmHandler;
++ (instancetype)alertWithMessage:(NSString *)message
+              confirmButtonTitle:(NSString *)confirmButtonTitle
+                  confirmHandler:(dispatch_block_t)confirmHandler;
++ (instancetype)alertWithMessage:(NSString *)message
+              confirmButtonTitle:(NSString *)confirmButtonTitle;
++ (void)alertWithMessage:(NSString *)message;
 @end
-
 
 
 

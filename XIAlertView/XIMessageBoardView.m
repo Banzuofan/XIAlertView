@@ -7,6 +7,7 @@
 //
 
 #import "XIMessageBoardView.h"
+#import "XIAlertView.h"
 
 
 UIImage *imageFromColor(UIColor *color, CGSize size){
@@ -79,9 +80,11 @@ UIImage *imageFromColor(UIColor *color, CGSize size){
 
 - (void)buttonAction
 {
-    if(_buttonActionHandler){
-        _buttonActionHandler();
-    }
+//    if(_buttonActionHandler){
+//        _buttonActionHandler();
+//    }
+    
+    [self dismissAlertView];
 }
 
 - (void)setupConstraints{

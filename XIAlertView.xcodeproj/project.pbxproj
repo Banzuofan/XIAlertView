@@ -17,6 +17,7 @@
 		0D30D67F1ECC44DC0026A541 /* XIBlurView.m in Sources */ = {isa = PBXBuildFile; fileRef = 0D30D67A1ECC44DC0026A541 /* XIBlurView.m */; };
 		0D30D6851ECC44F60026A541 /* XIAlertModalBackgroundView.m in Sources */ = {isa = PBXBuildFile; fileRef = 0D30D6821ECC44F60026A541 /* XIAlertModalBackgroundView.m */; };
 		0D30D6861ECC44F60026A541 /* XIAlertView.m in Sources */ = {isa = PBXBuildFile; fileRef = 0D30D6841ECC44F60026A541 /* XIAlertView.m */; };
+		0D9C6A6D1F4BC45400E3F982 /* UIView+XIAlertView.m in Sources */ = {isa = PBXBuildFile; fileRef = 0D9C6A6C1F4BC45400E3F982 /* UIView+XIAlertView.m */; };
 		0DC9B5F81D40A2A2002AC776 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 0DC9B5F71D40A2A2002AC776 /* main.m */; };
 		0DC9B5FB1D40A2A2002AC776 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 0DC9B5FA1D40A2A2002AC776 /* AppDelegate.m */; };
 		0DC9B5FE1D40A2A2002AC776 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 0DC9B5FD1D40A2A2002AC776 /* ViewController.m */; };
@@ -77,6 +78,8 @@
 		0D30D6821ECC44F60026A541 /* XIAlertModalBackgroundView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = XIAlertModalBackgroundView.m; sourceTree = "<group>"; };
 		0D30D6831ECC44F60026A541 /* XIAlertView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = XIAlertView.h; sourceTree = "<group>"; };
 		0D30D6841ECC44F60026A541 /* XIAlertView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = XIAlertView.m; sourceTree = "<group>"; };
+		0D9C6A6B1F4BC45400E3F982 /* UIView+XIAlertView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIView+XIAlertView.h"; sourceTree = "<group>"; };
+		0D9C6A6C1F4BC45400E3F982 /* UIView+XIAlertView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIView+XIAlertView.m"; sourceTree = "<group>"; };
 		0DC9B5F31D40A2A2002AC776 /* XIAlertView.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = XIAlertView.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		0DC9B5F71D40A2A2002AC776 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		0DC9B5F91D40A2A2002AC776 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
@@ -143,6 +146,8 @@
 				0D30D6821ECC44F60026A541 /* XIAlertModalBackgroundView.m */,
 				0D30D6831ECC44F60026A541 /* XIAlertView.h */,
 				0D30D6841ECC44F60026A541 /* XIAlertView.m */,
+				0D9C6A6B1F4BC45400E3F982 /* UIView+XIAlertView.h */,
+				0D9C6A6C1F4BC45400E3F982 /* UIView+XIAlertView.m */,
 			);
 			path = AlertView;
 			sourceTree = "<group>";
@@ -334,6 +339,7 @@
 				0D30D67B1ECC44DC0026A541 /* XIActionSheet.m in Sources */,
 				0DC9B5FB1D40A2A2002AC776 /* AppDelegate.m in Sources */,
 				0DC9B5F81D40A2A2002AC776 /* main.m in Sources */,
+				0D9C6A6D1F4BC45400E3F982 /* UIView+XIAlertView.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

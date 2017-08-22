@@ -27,6 +27,12 @@
 #import <objc/runtime.h>
 #import "XIAlertModalBackgroundView.h"
 
+NSNotificationName const  XIAlertViewWillDismissNotification = @"XIAlertViewWillDismissNotification";
+NSNotificationName const  XIAlertViewDidDismissNotification = @"XIAlertViewDidDismissNotification";
+
+NSString *const XIAlertViewRCEventDismiss = @"XIAlertViewRCEventDismiss";
+
+
 static CGFloat const kDefaultContainerWidth = 280.;
 static CGFloat const kTitleMessageSpace = 12;
 static CGFloat const kAlertContentViewMinHeight = 80.0;
@@ -127,8 +133,15 @@ static void* __backgroundViewKey = &__backgroundViewKey;
 @property(nonatomic, strong) UIWindow *lastKeyWindow;
 @property(nonatomic, strong) UIWindow *currentKeyWindow;
 @property(nonatomic, assign, getter = isVisible) BOOL visible;
-@property(nonatomic, assign) BOOL customViewVisible;
 @property(nonatomic, assign) XICustomViewPresentationStyle customViewPresentationStyle;
+@property(nonatomic, assign) BOOL customViewVisible;
+/**
+ 自定义视图是否显示blur背景
+ 
+ customViewBlurEnabled为NO时，XIAlertModalBackgroundView不显示裁切区域，
+ XIAlertContentView及XIAlertContentView的backgroundView的背景色都是透明色
+ */
+@property(nonatomic, assign) BOOL customViewBlurEnabled;
 @end
 
 @implementation XIAlertView
@@ -156,6 +169,8 @@ static void* __backgroundViewKey = &__backgroundViewKey;
         self.userInteractionEnabled = YES;
         self.layer.cornerRadius = kDefaultCornerRadius;
         self.clipsToBounds = YES;
+        
+        _customViewBlurEnabled = YES;
         
         _buttons = @[].mutableCopy;
     }
@@ -191,13 +206,27 @@ static void* __backgroundViewKey = &__backgroundViewKey;
     return self;
 }
 
-- (instancetype)initWithCustomView:(UIView *)customView withPresentationStyle:(XICustomViewPresentationStyle)style
+- (instancetype)initWithCustomView:(UIView *)customView
+                       blurEnabled:(BOOL)blurEnabled
+                      cornerRadius:(CGFloat)cornerRadius
+             withPresentationStyle:(XICustomViewPresentationStyle)style
 {
     if(self=[self initWithFrame:CGRectZero]){
+        
+        // 重新设置cornerRadius
+        self.layer.cornerRadius = cornerRadius;
+        
+        self.customViewBlurEnabled = blurEnabled;
+        
         self.customViewPresentationStyle = style;
         self.customViewVisible = YES;
         
         _contentView = [[XIAlertContentView alloc] initWithFrame:CGRectZero];
+        
+        if(!blurEnabled){
+            _contentView.backgroundView.backgroundColor = [UIColor clearColor];
+            _contentView.backgroundColor = [UIColor clearColor];
+        }
         _contentView.alertView = self;
         [self addSubview:_contentView];
         if(CGSizeEqualToSize(customView.frame.size, CGSizeZero)){
@@ -209,6 +238,15 @@ static void* __backgroundViewKey = &__backgroundViewKey;
         _contentView.frame = CGRectMake(0, 0, _contentView.preferredFrameSize.width, _contentView.preferredFrameSize.height);
         [_contentView addSubview:customView];
         customView.autoresizingMask = UIViewAutoresizingFlexibleWidth|UIViewAutoresizingFlexibleHeight;
+        
+    }
+    return self;
+}
+
+- (instancetype)initWithCustomView:(UIView *)customView withPresentationStyle:(XICustomViewPresentationStyle)style
+{
+    if(self=[self initWithCustomView:customView blurEnabled:YES cornerRadius:kDefaultCornerRadius withPresentationStyle:style]){
+        
     }
     return self;
 }
@@ -305,6 +343,10 @@ static void* __backgroundViewKey = &__backgroundViewKey;
 
 - (void)applyBlurEffect
 {
+    if(self.customViewVisible && !self.customViewBlurEnabled){
+        return;
+    }
+    
     [_contentView applyBlurEffect];
     for(XIAlertButtonItem *item in _buttons){
         [item.backgroundView applyBlurEffect];
@@ -313,6 +355,10 @@ static void* __backgroundViewKey = &__backgroundViewKey;
 
 - (void)disableBlurEffect
 {
+    if(self.customViewVisible && !self.customViewBlurEnabled){
+        return;
+    }
+    
     [_contentView disableBlurEffect];
     for(XIAlertButtonItem *item in _buttons){
         [item.backgroundView disableBlurEffect];
@@ -326,23 +372,32 @@ static void* __backgroundViewKey = &__backgroundViewKey;
         if(self.currentKeyWindow.rootViewController.view){
             self.currentKeyWindow.rootViewController.backgroundView.alpha = 0;
         }
+        
+        // 自定义视图显示时是否应用动画
+        BOOL customViewShowWithAnimation = YES;
         if(self.customViewVisible){
             
             if(self.customViewPresentationStyle==Default){
                 self.transform = CGAffineTransformMakeScale(1.2, 1.2);
             }
             else if(self.customViewPresentationStyle==MoveUp){
-                _duration = 0.35;
+                _duration = 0.45;
                 self.transform = CGAffineTransformMakeTranslation(0, [UIScreen mainScreen].bounds.size.height);
             }
             else if (self.customViewPresentationStyle==MoveDown){
-                _duration = 0.35;
+                _duration = 0.45;
                 self.transform = CGAffineTransformMakeTranslation(0, -[UIScreen mainScreen].bounds.size.height);
+            }
+            else if (self.customViewPresentationStyle==StartupAD){
+                // 启动屏广告显示时禁掉动画
+                customViewShowWithAnimation = NO;
             }
         }
         else{
             self.transform = CGAffineTransformMakeScale(1.2, 1.2);
         }
+        
+        _duration = customViewShowWithAnimation? _duration:0;
         
         [UIView animateWithDuration:_duration delay:0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
             if(self.customViewVisible){
@@ -391,9 +446,11 @@ static void* __backgroundViewKey = &__backgroundViewKey;
             else if (self.customViewPresentationStyle==MoveDown){
                 _duration = 0.35;
             }
+            else if (self.customViewPresentationStyle==StartupAD){
+                _duration = 0.7;
+            }
         }
-        else
-        {
+        else{
             [self disableBlurEffect];
         }
         
@@ -408,6 +465,10 @@ static void* __backgroundViewKey = &__backgroundViewKey;
                 }
                 else if (self.customViewPresentationStyle==MoveDown){
                     self.transform = CGAffineTransformMakeTranslation(0, [UIScreen mainScreen].bounds.size.height);
+                }
+                else if (self.customViewPresentationStyle==StartupAD){
+                    self.transform = CGAffineTransformMakeScale(1.3, 1.3);
+                    self.alpha = 0;
                 }
             }
             else{
@@ -481,17 +542,23 @@ static void* __backgroundViewKey = &__backgroundViewKey;
     self.currentKeyWindow.frame = [UIScreen mainScreen].bounds;
     [self.currentKeyWindow makeKeyAndVisible];
     
-    // Fix UI issue that the size of alert is less than the size of the cropped area.
-    dispatch_block_t _updateAppearance = ^{
+    
+    dispatch_block_t redrawSizeOfCroppedScope = ^{
         [self updateUILayouts];
-        self.currentKeyWindow.rootViewController.backgroundView.cropSize = self.intrinsicContentSize;
+        
+        if(self.customViewVisible && !self.customViewBlurEnabled){
+            self.currentKeyWindow.rootViewController.backgroundView.cropSize = CGSizeZero;
+        }
+        else{
+            self.currentKeyWindow.rootViewController.backgroundView.cropSize = self.intrinsicContentSize;
+        }
     };
     
-    _updateAppearance();
+    redrawSizeOfCroppedScope();
     
     [self showWithAnimation:YES completion:^{
         
-        _updateAppearance();
+        redrawSizeOfCroppedScope();
         
         [XIAlertViewQueue sharedQueue].animating = NO;
         
@@ -502,7 +569,20 @@ static void* __backgroundViewKey = &__backgroundViewKey;
 
 - (void)dismiss
 {
+    NSNumber *alertViewTag = [NSNumber numberWithInteger:self.tag];
+    NSDictionary *NFUserInfo = @{@"customViewClassName":self.accessibilityLabel.length>0?self.accessibilityLabel:@"",
+                                 @"alertViewTag":alertViewTag};
+    
+    [[NSNotificationCenter defaultCenter] postNotificationName:XIAlertViewWillDismissNotification
+                                                        object:self
+                                                      userInfo:NFUserInfo];
+    
+    
     [self hideWithAnimation:YES completion:^{
+        
+        [[NSNotificationCenter defaultCenter] postNotificationName:XIAlertViewDidDismissNotification
+                                                            object:self
+                                                          userInfo:NFUserInfo];
         
         [self removeFromSuperview];
         self.currentKeyWindow.hidden = YES;
@@ -519,6 +599,14 @@ static void* __backgroundViewKey = &__backgroundViewKey;
     
     [self.lastKeyWindow makeKeyAndVisible];
     self.lastKeyWindow.hidden = NO;
+}
+
+// handle responderChain events
+- (void)sendRCEventWithName:(NSString *)eventName userInfo:(NSDictionary *)userInfo
+{
+    if([eventName isEqualToString:XIAlertViewRCEventDismiss]){
+        [self dismiss];
+    }
 }
 
 @end
@@ -827,7 +915,7 @@ static void* __backgroundViewKey = &__backgroundViewKey;
 - (void)setFrame:(CGRect)frame
 {
     [super setFrame:frame];
-
+    
     _blurView.frame = self.bounds;
     _backgroundView.frame = self.bounds;
 }
@@ -841,7 +929,7 @@ static void* __backgroundViewKey = &__backgroundViewKey;
         [self addSubview:_blurView];
         [self sendSubviewToBack:_blurView];
     }
-    _backgroundView.alpha = 0.25;
+    _backgroundView.alpha = 0.15;
 }
 
 - (void)disableBlurEffect
@@ -907,7 +995,14 @@ static void* __backgroundViewKey = &__backgroundViewKey;
 {
     [super viewDidLoad];
     self.view.backgroundColor = [UIColor clearColor];
-    self.backgroundView.cropSize = self.alertView.intrinsicContentSize;
+    
+    if(self.alertView.customViewVisible && !self.alertView.customViewBlurEnabled){
+        self.backgroundView.cropSize = CGSizeMake(0, 0);
+    }
+    else{
+        self.backgroundView.cropSize = self.alertView.intrinsicContentSize;
+    }
+    
     [self.view insertSubview:self.alertView aboveSubview:self.backgroundView];
     
     self.alertView.translatesAutoresizingMaskIntoConstraints = NO;
@@ -1042,6 +1137,59 @@ static void* __backgroundViewKey = &__backgroundViewKey;
     XIAlertView *alert = [[XIAlertView alloc] initWithCustomView:customView withPresentationStyle:style];
     [alert show];
     return alert;
+}
+
++ (instancetype)alertWithTitle:(NSString *)title
+                       message:(NSString *)message
+             cancelButtonTitle:(NSString *)cancelButtonTitle
+            confirmButtonTitle:(NSString *)confirmButtonTitle
+                 cancelHandler:(dispatch_block_t)cancelHandler
+                confirmHandler:(dispatch_block_t)confirmHandler
+{
+    XIAlertView *alert = [[XIAlertView alloc] initWithTitle:title message:message cancelButtonTitle:nil];
+    if(cancelButtonTitle.length>0){
+        [alert addButtonWithTitle:cancelButtonTitle style:XIAlertActionStyleCancel handler:^(XIAlertView *alertView, XIAlertButtonItem *buttonItem) {
+            [alertView dismiss];
+            
+            if(cancelHandler){
+                cancelHandler();
+            }
+        }];
+    }
+    if(confirmButtonTitle.length>0){
+        [alert addButtonWithTitle:confirmButtonTitle style:XIAlertActionStyleDefault handler:^(XIAlertView *alertView, XIAlertButtonItem *buttonItem) {
+            [alertView dismiss];
+            
+            if(confirmHandler){
+                confirmHandler();
+            }
+        }];
+    }
+    [alert show];
+    return alert;
+}
+
++ (instancetype)alertWithMessage:(NSString *)message
+              confirmButtonTitle:(NSString *)confirmButtonTitle
+                  confirmHandler:(dispatch_block_t)confirmHandler
+{
+    return [self alertWithTitle:nil
+                        message:message
+              cancelButtonTitle:nil
+             confirmButtonTitle:confirmButtonTitle
+                  cancelHandler:nil
+                 confirmHandler:confirmHandler];
+}
+
++ (instancetype)alertWithMessage:(NSString *)message
+              confirmButtonTitle:(NSString *)confirmButtonTitle
+{
+    return [self alertWithMessage:message confirmButtonTitle:confirmButtonTitle confirmHandler:nil];
+}
+
++ (void)alertWithMessage:(NSString *)message
+{
+    [[XIAlertView alertWithMessage:message confirmButtonTitle:@"取消"] show];
 }
 
 @end
